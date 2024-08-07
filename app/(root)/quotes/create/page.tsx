@@ -4,7 +4,7 @@ import ClientInfoForm from '@/components/ClientInfoForm';
 import ItemsForm from '@/components/ItemsForm';
 import RemarksForm from '@/components/RemarksForm';
 import ReviewForm from '@/components/ReviewForm';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -31,6 +31,10 @@ const CreateQuote = () => {
       ...newData,
     }));
   };
+
+  useEffect(() =>{
+    console.log(formData)
+  }, [formData])
 
   const renderStep = () => {
     switch (step) {

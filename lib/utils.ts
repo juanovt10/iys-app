@@ -32,8 +32,8 @@ export const formatWithCommas = (number: number): string => {
 
 
 export const clientInfoSchema = z.object({
-  nombre_empresa: z.string().min(20, "Company name is required").max(100, "Company name is too long"),
-  direccion: z.string().min(30, "Address is required").max(100, "Address is too long"),
+  nombre_empresa: z.string().min(10, "Company name is required").max(100, "Company name is too long"),
+  direccion: z.string().min(10, "Address is required").max(100, "Address is too long"),
   telefono: z.string().min(1, "Phone number is required"),
   email: z.string().email("Invalid email address"),
   nombre_contacto: z.string().min(4, "Contact name is required").max(50, "Contact name is too long"),

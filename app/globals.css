@@ -70,6 +70,12 @@
 }
 
 @layer utilities {
+
+  .text-12 {
+    @apply text-[12px] leading-[16px];
+  }
+
+  
   .text-16 {
     @apply text-[16px] leading-[24px];
   }

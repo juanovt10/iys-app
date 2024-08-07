@@ -1,60 +1,99 @@
 'use client'
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Client } from '@/types/index';
 import CustomInput from '@/components/CustomInput';
-import { Form } from '@/components/ui/form';
+// import { Form } from '@/components/ui/form';
 import { clientInfoSchema } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 
+const ClientInfoForm = ({ nextStep, updateFormData }: any) => {
+  const [isLoading, setIsLoading] = useState(false);
 
-interface ClientInfoFormProps {
-  nextStep: () => void;
-  updateFormData: (data: { client: Client }) => void;
-}
-
-const ClientInfoForm: React.FC<ClientInfoFormProps> = ({ nextStep, updateFormData }) => {
-  const formSchema = clientInfoSchema;
-
-  const methods = useForm<z.infer<typeof formSchema> & { id: string }>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof clientInfoSchema>>({
+    resolver: zodResolver(clientInfoSchema),
     defaultValues: {
-      id: '',
       nombre_empresa: '',
       nombre_contacto: '',
       email: '',
       direccion: '',
       telefono: '',
       nit: '',
-    },
+    }
   });
 
-  const { handleSubmit, control } = methods;
-
-  const onSubmit = (data: z.infer<typeof formSchema> & { id: string }) => {
+  const onSubmit = (data:z.infer<typeof clientInfoSchema>) => {
+    setIsLoading(true);
     updateFormData({ client: data });
     nextStep();
-  };
+    console.log(data)
+  }
 
   return (
-    <FormProvider {...methods}>
-      <Form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <h2>Client Information</h2>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <CustomInput 
+          control={form.control}
+          name="nombre_empresa"
+          label="Nombre de la empresa"
+          placeholder="Nombre de la empresa"
+        />
 
-        <CustomInput control={control} name="nombre_empresa" label="Company Name" placeholder="Enter company name" />
-        <CustomInput control={control} name="direccion" label="Address" placeholder="Enter address" />
-        <CustomInput control={control} name="telefono" label="Phone" placeholder="Enter phone number" />
-        <CustomInput control={control} name="email" label="Email" placeholder="Enter email" />
-        <CustomInput control={control} name="nombre_contacto" label="Contact Name" placeholder="Enter contact name" />
-        <CustomInput control={control} name="nit" label="NIT" placeholder="Enter NIT" />
+        <CustomInput 
+          control={form.control}
+          name="nombre_contacto"
+          label="Nombre del representante"
+          placeholder="Nombre del representante"
+        />
 
-        <Button type="submit">Next</Button>
-      </Form>
-    </FormProvider>
-  );
+        <CustomInput 
+          control={form.control}
+          name="email"
+          label="Email"
+          placeholder="Email"
+        />
+        
+        <div className='flex gap-4 w-full'>
+          <CustomInput 
+            control={form.control}
+            name="nit"
+            label="Nit"
+            placeholder="Nit"
+          />
+
+          <CustomInput 
+            control={form.control}
+            name="telefono"
+            label="Number de telefono"
+            placeholder="Number de telefono"
+          />
+        </div>
+
+
+        <CustomInput 
+          control={form.control}
+          name="direccion"
+          label="Direccion"
+          placeholder="Direccion"
+        />
+
+        <Button type="submit">Submit</Button>
+      </form>
+    </Form>
+  )
 };
 
 export default ClientInfoForm;
