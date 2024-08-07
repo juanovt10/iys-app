@@ -39,9 +39,9 @@ const CreateQuote = () => {
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <ClientInfoForm nextStep={nextStep} updateFormData={updateFormData} />;
+        return <ClientInfoForm nextStep={nextStep} updateFormData={updateFormData} clientData={formData.client} />;
       case 2:
-        return <ItemsForm nextStep={nextStep} prevStep={prevStep} updateFormData={updateFormData} />;
+        return <ItemsForm nextStep={nextStep} prevStep={prevStep} updateFormData={updateFormData} itemsData={formData.items}/>;
       case 3:
         return <RemarksForm nextStep={nextStep} prevStep={prevStep} updateFormData={updateFormData} />;
       case 4:

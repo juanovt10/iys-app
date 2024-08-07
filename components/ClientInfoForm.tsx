@@ -1,38 +1,20 @@
 'use client'
 
 import React, { useState } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Client } from '@/types/index';
 import CustomInput from '@/components/CustomInput';
-// import { Form } from '@/components/ui/form';
 import { clientInfoSchema } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { Form } from "@/components/ui/form"
 
-const ClientInfoForm = ({ nextStep, updateFormData }: any) => {
+const ClientInfoForm = ({ nextStep, updateFormData, clientData }: any) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof clientInfoSchema>>({
     resolver: zodResolver(clientInfoSchema),
-    defaultValues: {
-      nombre_empresa: '',
-      nombre_contacto: '',
-      email: '',
-      direccion: '',
-      telefono: '',
-      nit: '',
-    }
+    defaultValues: clientData,
   });
 
   const onSubmit = (data:z.infer<typeof clientInfoSchema>) => {
@@ -90,7 +72,7 @@ const ClientInfoForm = ({ nextStep, updateFormData }: any) => {
           placeholder="Direccion"
         />
 
-        <Button type="submit">Submit</Button>
+        <Button className='w-full' type="submit">Continuar</Button>
       </form>
     </Form>
   )
