@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { Item } from "@/types"
+import { z } from 'zod';
 
 // method to add more classes 
 export function cn(...inputs: ClassValue[]) {
@@ -24,11 +25,18 @@ export const calculateTotals = (items: Item[]) => {
   return { subtotal, aiu20, iva, total };
 };
 
-
 export const formatWithCommas = (number: number): string => {
   const roundedNumber = Math.round(number); // Round the number to the nearest whole number
   return roundedNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
 
+export const clientInfoSchema = z.object({
+  nombre_empresa: z.string().min(20, "Company name is required").max(100, "Company name is too long"),
+  direccion: z.string().min(30, "Address is required").max(100, "Address is too long"),
+  telefono: z.string().min(1, "Phone number is required"),
+  email: z.string().email("Invalid email address"),
+  nombre_contacto: z.string().min(4, "Contact name is required").max(50, "Contact name is too long"),
+  nit: z.string().min(5, "NIT is required"),
+});
 

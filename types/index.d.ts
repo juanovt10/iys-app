@@ -33,7 +33,7 @@ export interface Item {
 export interface Client {
   id: string;
   direccion: string;
-  telefono: number;
+  telefono: string;
   email: string;
   nombre_contacto: string;
   nombre_empresa: string;
