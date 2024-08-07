@@ -11,6 +11,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 
 
 
+
 const Quotes = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [search, setSearch] = useState<string>('');
@@ -53,13 +54,15 @@ const Quotes = () => {
     setSearch(e.target.value);
   };
 
+
   return (
     <div className='flex flex-col gap-4 p-5 w-full'>
-      {/* here is the title + breadcrumb layout inside layoyut? */}
       <h1 className='text-2xl font-extrabold'>Cotizaciones</h1>
       <div className='flex flex-col gap-4'>
-        <Button className='w-full bg-companyGradient border border-gray-200 rounded-md shadow'>
-          Crear Cotizacion
+        <Button
+          className='w-full bg-companyGradient border border-gray-200 rounded-md shadow'
+        >
+          <Link href={'/quotes/create'}>Crear Cotizacion</Link>
         </Button>
 
         <Input
