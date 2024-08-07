@@ -1,35 +1,36 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from "@/components/ui/input"
-import { mockQuoteData } from '@/constants'
-import { formatDate } from '@/lib/utils'
 import supabase from '@/lib/supabase/client'
 import { Quote } from '@/types/index'
-import { calculateTotals, formatWithCommas } from '@/lib/utils'
+import QuoteCard from '@/components/QuoteCard'
+import { useDebounce } from '@/hooks/useDebounce'
 
 
 
 const Quotes = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [search, setSearch] = useState<string>('');
+
+  const debounceSearch = useDebounce(search, 500);
 
 
-  const fetchLatestQuotes = async (): Promise<void> => {
-    const { data, error } = await supabase
+  const fetchLatestQuotes = async (searchQuery: string = ''): Promise<void> => {
+    let query = supabase
       .from('cotizaciones')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(5);
+
+    if (searchQuery) {
+      console.log('Applying search filter:', searchQuery);
+      query = query.or(`cliente.ilike.%${searchQuery}%`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching quotes:', error.message);
@@ -45,11 +46,12 @@ const Quotes = () => {
   };
 
   useEffect(() => {
-    fetchLatestQuotes();
-    
-  }, [])
+    fetchLatestQuotes(debounceSearch);
+  }, [debounceSearch])
 
-  console.log(quotes)
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  };
 
   return (
     <div className='flex flex-col gap-4 p-5 w-full'>
@@ -62,25 +64,15 @@ const Quotes = () => {
 
         <Input
           type="text"
-          placeholder="Buscar cotización"
+          placeholder="Buscar cotización por nombre del cliente"
+          value={search}
+          onChange={handleSearchChange}
           className='border border-gray-200 rounded-md shadow'
         />
 
         <div className="space-y-4 pb-10">
           {quotes.map((quote) => (
-            <div key={quote.id} className="p-4 border border-gray-200 rounded shadow">
-              <div className="flex justify-between">
-                <div>
-                  <p className="text-lg font-semibold">Quote #{quote.id}</p> 
-                  <p className="text-sm text-gray-600">Client: {quote.cliente}</p>
-                  <p className="text-sm text-gray-600">Items: {quote.items.length}</p>
-                  <p className="text-sm text-gray-600">Total: ${formatWithCommas(calculateTotals(quote.items).total)}</p>
-                  <p className="text-sm text-gray-600">
-                    Date: {formatDate(new Date(quote.created_at).toISOString())}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <QuoteCard key={quote.id} quote={quote} />
           ))}
         </div>
       </div>
