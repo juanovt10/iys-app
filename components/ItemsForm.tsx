@@ -11,7 +11,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import supabase from '@/lib/supabase/client';
 import { Item } from '@/types';
-import { cn } from '@/lib/utils';
+import { cn, formatWithCommas } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { ToastAction } from './ui/toast';
 import { ServerInsertedHTMLContext } from 'next/navigation';
@@ -77,9 +77,10 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     form.setValue('items', newItems);
   };
 
-  const onUpdateItem = (index: number, field: keyof Item, value: any) => {
+  const onUpdateItem = (index: number, field: keyof Item, value: string) => {
+    const numberValue = Number(value.replace(/,/g, '')); // Remove commas for parsing
     const updatedItems = selectedItems.map((item, idx) =>
-      idx === index ? { ...item, [field]: Number(value) } : item
+      idx === index ? { ...item, [field]: numberValue } : item
     );
     setSelectedItems(updatedItems);
     form.setValue('items', updatedItems);
@@ -156,8 +157,8 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
               </PopoverTrigger>
               <PopoverContent className="w-full p-0">
                 <Command>
-                  <CommandInput 
-                    placeholder="Buscar items..." 
+                  <CommandInput
+                    placeholder="Buscar items..."
                   />
                   <CommandList>
                     <CommandEmpty>No se encontraron items.</CommandEmpty>
@@ -184,45 +185,78 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
 
           <div className="space-y-4 max-h-80 overflow-y-auto">
             {selectedItems.map((item, index) => (
-              <div
-              key={index}
-              className="flex flex-col space-y-4 border p-6 rounded-md bg-white shadow-md"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex-1 font-medium text-gray-800">
-                  #{selectedItems.length - index} - {item.descripcion}
-                </div>
-                <div className="flex items-start space-x-4">
-                  <div className="flex flex-col items-end space-y-2">
-                    <label htmlFor={`quantity-${index}`} className="text-gray-600 text-sm">
-                      Cantidad ({item.unidad})
-                    </label>
-                    <input
-                      id={`quantity-${index}`}
-                      type="number"
-                      placeholder="Quantity"
-                      value={item.cantidad}
-                      onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
-                      className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-24"
-                    />
+              <div key={index} className="flex flex-col space-y-4 border p-6 rounded-lg shadow-md">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 font-medium text-gray-800">
+                    #{selectedItems.length - index} - {item.descripcion}
                   </div>
-                  <div className="flex flex-col items-end space-y-2">
-                    <label htmlFor={`price-${index}`} className="text-gray-600 text-sm">
-                      Precio/{item.unidad}
-                    </label>
-                    <input
-                      id={`price-${index}`}
-                      type="number"
-                      placeholder="Price"
-                      value={item.precio_unidad}
-                      onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
-                      className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-24"
-                    />
+                  <div className='flex items-start space-x-6'>
+                    <div className="flex flex-col items-center space-y-2">
+                      <FormLabel className="text-sm font-semibold text-gray-600">{item.unidad}</FormLabel>
+                      <Input
+                        id={`item-${index}-cantidad`}
+                        type="text"
+                        placeholder="Quantity"
+                        value={formatWithCommas(item.cantidad)}
+                        onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
+                        className="w-24 text-center"
+                      />
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <FormLabel className="text-sm font-semibold text-gray-600">Precio/{item.unidad}</FormLabel>
+                      <Input
+                        id={`item-${index}-precio_unidad`}
+                        type="text"
+                        placeholder="Price"
+                        value={formatWithCommas(item.precio_unidad)}
+                        onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
+                        className="w-full text-center"
+                      />
+                    </div>
                   </div>
                 </div>
+                <Button
+                  variant="destructive"
+                  type="button"
+                  onClick={() => onRemoveItem(index)}
+                  className="ml-4"
+                >
+                  Remove
+                </Button>
               </div>
-                <Button variant="destructive" type='button' onClick={() => onRemoveItem(index)}>Remove</Button>
-              </div>
+
+
+            //     <div className="flex items-start space-x-4">
+            //       <div className="flex flex-col items-end space-y-2">
+            //         <label htmlFor={`quantity-${index}`} className="text-gray-600 text-sm">
+            //           Cantidad ({item.unidad})
+            //         </label>
+            //         <input
+            //           id={`quantity-${index}`}
+            //           type="number"
+            //           placeholder="Quantity"
+            //           value={formatWithCommas(item.cantidad)}
+            //           onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
+            //           className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-24"
+            //         />
+            //       </div>
+            //       <div className="flex flex-col items-end space-y-2">
+            //         <label htmlFor={`price-${index}`} className="text-gray-600 text-sm">
+            //           Precio/{item.unidad}
+            //         </label>
+            //         <input
+            //           id={`price-${index}`}
+            //           type="number"
+            //           placeholder="Price"
+            //           value={formatWithCommas(item.precio_unidad)}
+            //           onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
+            //           className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-24"
+            //         />
+            //       </div>
+            //     </div>
+            //   </div>
+            //     <Button variant="destructive" type='button' onClick={() => onRemoveItem(index)}>Remove</Button>
+            //   </div>
             ))}
           </div>
 

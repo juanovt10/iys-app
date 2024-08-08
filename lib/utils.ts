@@ -40,3 +40,13 @@ export const clientInfoSchema = z.object({
   nit: z.string().min(5, "NIT is required"),
 });
 
+export const remarksSchema = z.object({
+  validez: z.string().min(10),
+  anticipo: z.string().min(10),
+  pagos: z.string().min(10),
+  premarcado: z.string().min(10),
+  tiempos: z.string().min(10),
+  cambios: z.string().min(10),
+  AIU: z.string().min(10),
+})
+
