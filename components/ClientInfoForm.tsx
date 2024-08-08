@@ -24,10 +24,6 @@ const ClientInfoForm = ({ nextStep, updateFormData, clientData }: any) => {
     console.log(data)
   }
 
-  const testLogs = () => {
-    console.log(form)
-  }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

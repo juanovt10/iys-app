@@ -41,12 +41,12 @@ export const clientInfoSchema = z.object({
 });
 
 export const remarksSchema = z.object({
-  validez: z.string().min(10),
-  anticipo: z.string().min(10),
-  pagos: z.string().min(10),
-  premarcado: z.string().min(10),
-  tiempos: z.string().min(10),
-  cambios: z.string().min(10),
-  AIU: z.string().min(10),
+  validez: z.string().min(1),
+  anticipo: z.string().min(1),
+  pagos: z.string().min(1),
+  premarcado: z.string().min(1),
+  tiempos: z.string().min(1),
+  cambios: z.string().min(1),
+  AIU: z.string().min(1),
 })
 

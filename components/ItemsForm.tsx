@@ -224,39 +224,6 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
                   Remove
                 </Button>
               </div>
-
-
-            //     <div className="flex items-start space-x-4">
-            //       <div className="flex flex-col items-end space-y-2">
-            //         <label htmlFor={`quantity-${index}`} className="text-gray-600 text-sm">
-            //           Cantidad ({item.unidad})
-            //         </label>
-            //         <input
-            //           id={`quantity-${index}`}
-            //           type="number"
-            //           placeholder="Quantity"
-            //           value={formatWithCommas(item.cantidad)}
-            //           onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
-            //           className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-24"
-            //         />
-            //       </div>
-            //       <div className="flex flex-col items-end space-y-2">
-            //         <label htmlFor={`price-${index}`} className="text-gray-600 text-sm">
-            //           Precio/{item.unidad}
-            //         </label>
-            //         <input
-            //           id={`price-${index}`}
-            //           type="number"
-            //           placeholder="Price"
-            //           value={formatWithCommas(item.precio_unidad)}
-            //           onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
-            //           className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-24"
-            //         />
-            //       </div>
-            //     </div>
-            //   </div>
-            //     <Button variant="destructive" type='button' onClick={() => onRemoveItem(index)}>Remove</Button>
-            //   </div>
             ))}
           </div>
 

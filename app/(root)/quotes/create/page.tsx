@@ -19,7 +19,7 @@ const CreateQuote = () => {
   const [formData, setFormData] = useState({
     client: {},
     items: [],
-    remakrs: {}
+    remarks: {}
   });
 
   const nextStep = () => setStep((prevStep) => prevStep + 1);
@@ -43,7 +43,7 @@ const CreateQuote = () => {
       case 2:
         return <ItemsForm nextStep={nextStep} prevStep={prevStep} updateFormData={updateFormData} itemsData={formData.items}/>;
       case 3:
-        return <RemarksForm nextStep={nextStep} prevStep={prevStep} updateFormData={updateFormData} />;
+        return <RemarksForm nextStep={nextStep} prevStep={prevStep} updateFormData={updateFormData} remarksData={formData.remarks} />;
       case 4:
         return <ReviewForm prevStep={prevStep} formData={formData} />;
       default:

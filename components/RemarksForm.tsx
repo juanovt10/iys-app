@@ -1,85 +1,86 @@
-// RemarksForm.tsx
+import { remarksSchema } from '@/lib/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Form } from './ui/form';
+import CustomTextarea from './CustomTextarea';
+import { Button } from './ui/button';
 
-import { useState } from 'react';
+const RemarksForm = ({ nextStep, prevStep, updateFormData, remarksData }: any) => {
+  const defaultValues = {
+    validez: "Validez de la oferta 15 dias.",
+    anticipo: "Anticipo 60% que debe ser girado 12 dias antes del inicio de la obra.",
+    pagos: "Saldo 40% a corte final de ejecucion.",
+    premarcado: "Condiciones de premarcado y superficie a definir en visita de obra.",
+    tiempos: "Tiempo de ejecucion por definir segun horarios disponibles para la aplicacion y condiciones climaticas.",
+    cambios: "Cualquier cambio en las cantidades de obra modificara el valor total de esta cotizacion pero se mantendran los valores unitarios para la liquidacion final",
+    AIU: "A.I.U. compuesto 10% Administracion 5% Imprevistos y 5% Utilidad",
+  }
 
-const RemarksForm = ({ nextStep, prevStep, updateFormData }: any) => {
-  const [remarks, setRemarks] = useState({
-    validez: '',
-    anticipo: '',
-    pagos: '',
-    premarcado: '',
-    tiempos: '',
-    cambios: '',
-    AIU: '',
+  const form = useForm<z.infer<typeof remarksSchema>>({
+    resolver: zodResolver(remarksSchema),
+    defaultValues: remarksData || defaultValues,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setRemarks({ ...remarks, [name]: value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateFormData({ remarks });
+  const onSubmit = (data: z.infer<typeof remarksSchema>) => {
+    updateFormData({ remarks: data });
     nextStep();
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Remarks</h2>
-      <input
-        type="text"
-        name="validez"
-        placeholder="Validez"
-        value={remarks.validez}
-        onChange={handleChange}
-      />
-      <input
-        type="text"
-        name="anticipo"
-        placeholder="Anticipo"
-        value={remarks.anticipo}
-        onChange={handleChange}
-      />
-      <input
-        type="text"
-        name="pagos"
-        placeholder="Pagos"
-        value={remarks.pagos}
-        onChange={handleChange}
-      />
-      <input
-        type="text"
-        name="premarcado"
-        placeholder="Premarcado"
-        value={remarks.premarcado}
-        onChange={handleChange}
-      />
-      <input
-        type="text"
-        name="tiempos"
-        placeholder="Tiempos"
-        value={remarks.tiempos}
-        onChange={handleChange}
-      />
-      <input
-        type="text"
-        name="cambios"
-        placeholder="Cambios"
-        value={remarks.cambios}
-        onChange={handleChange}
-      />
-      <input
-        type="text"
-        name="AIU"
-        placeholder="AIU"
-        value={remarks.AIU}
-        onChange={handleChange}
-      />
-      <button type="button" onClick={prevStep}>Back</button>
-      <button type="submit">Next</button>
-    </form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-screen max-h-screen">
+        <div className="flex-grow overflow-y-auto space-y-8">
+          <CustomTextarea 
+            control={form.control}
+            name="validez"
+            label="Validez"
+            placeholder="Entre validez de la oferta"
+          />
+          <CustomTextarea 
+            control={form.control}
+            name="anticipo"
+            label="Anticipo"
+            placeholder="Entre terminos de anticipo"
+          />
+          <CustomTextarea 
+            control={form.control}
+            name="pagos"
+            label="Pagos"
+            placeholder="Entre terminos de pago"
+          />
+          <CustomTextarea 
+            control={form.control}
+            name="premarcado"
+            label="Premarcado"
+            placeholder="Entre condiciones de premarcado"
+          />
+          <CustomTextarea 
+            control={form.control}
+            name="tiempos"
+            label="Tiempos"
+            placeholder="Entre tiempos de ejecucion"
+          />
+          <CustomTextarea 
+            control={form.control}
+            name="cambios"
+            label="Cambios"
+            placeholder="Entre obsevaciones de cambios"
+          />
+          <CustomTextarea 
+            control={form.control}
+            name="AIU"
+            label="AIU"
+            placeholder="Entre observaciones de AIU"
+          />
+        </div>
+        <div className="flex-shrink-0 flex justify-between p-4 bg-white">
+          <Button type="button" onClick={prevStep}>Back</Button>
+          <Button type="submit">Continue</Button>
+        </div>
+      </form>
+    </Form>
   );
-};
+}
 
 export default RemarksForm;
