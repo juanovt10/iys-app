@@ -72,7 +72,9 @@ const ClientInfoForm = ({ nextStep, updateFormData, clientData }: any) => {
           placeholder="Direccion"
         />
 
-        <Button className='w-full' type="submit">Continuar</Button>
+        <div className='flex justify-end'>
+          <Button type="submit">Continuar</Button>
+        </div>
       </form>
     </Form>
   )
