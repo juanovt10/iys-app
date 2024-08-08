@@ -1,7 +1,7 @@
 export interface Quote {
-  id: number;
+  id?: number;
   items: Item[];
-  created_at: Date;
+  created_at?: Date;
   cliente: string;
   excel_file: string;
   pdf_file: string;

@@ -17,9 +17,11 @@ const RemarksForm = ({ nextStep, prevStep, updateFormData, remarksData }: any) =
     AIU: "A.I.U. compuesto 10% Administracion 5% Imprevistos y 5% Utilidad",
   }
 
+  console.log('remakrs data', remarksData)
+
   const form = useForm<z.infer<typeof remarksSchema>>({
     resolver: zodResolver(remarksSchema),
-    defaultValues: remarksData || defaultValues,
+    defaultValues: Object.keys(remarksData).length > 0 ? remarksData : defaultValues,
   });
 
   const onSubmit = (data: z.infer<typeof remarksSchema>) => {
@@ -29,52 +31,53 @@ const RemarksForm = ({ nextStep, prevStep, updateFormData, remarksData }: any) =
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-screen max-h-screen">
-        <div className="flex-grow overflow-y-auto space-y-8">
-          <CustomTextarea 
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+        <div className="space-y-4 max-h-96 overflow-y-auto">
+          <CustomTextarea
             control={form.control}
             name="validez"
             label="Validez"
             placeholder="Entre validez de la oferta"
           />
-          <CustomTextarea 
+          <CustomTextarea
             control={form.control}
             name="anticipo"
             label="Anticipo"
             placeholder="Entre terminos de anticipo"
           />
-          <CustomTextarea 
+          <CustomTextarea
             control={form.control}
             name="pagos"
             label="Pagos"
             placeholder="Entre terminos de pago"
           />
-          <CustomTextarea 
+          <CustomTextarea
             control={form.control}
             name="premarcado"
             label="Premarcado"
             placeholder="Entre condiciones de premarcado"
           />
-          <CustomTextarea 
+          <CustomTextarea
             control={form.control}
             name="tiempos"
             label="Tiempos"
             placeholder="Entre tiempos de ejecucion"
           />
-          <CustomTextarea 
+          <CustomTextarea
             control={form.control}
             name="cambios"
             label="Cambios"
             placeholder="Entre obsevaciones de cambios"
           />
-          <CustomTextarea 
+          <CustomTextarea
             control={form.control}
             name="AIU"
             label="AIU"
             placeholder="Entre observaciones de AIU"
           />
         </div>
-        <div className="flex-shrink-0 flex justify-between p-4 bg-white">
+
+        <div className="flex justify-between pt-20">
           <Button type="button" onClick={prevStep}>Back</Button>
           <Button type="submit">Continue</Button>
         </div>

@@ -33,7 +33,8 @@ const CreateQuote = () => {
   };
 
   useEffect(() =>{
-    console.log(formData)
+    console.log(formData);
+    console.log('post api url',process.env.NEXT_PUBLIC_DEPLOYED_API_URL);
   }, [formData])
 
   const renderStep = () => {
