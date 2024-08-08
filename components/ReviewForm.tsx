@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import QuoteSummary from './QuoteSummary';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogTitle } from './ui/dialog';
+import Image from 'next/image';
 
 const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -102,30 +103,41 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
             hideCloseButton
           >
             <DialogHeader>
-              <DialogTitle>CRACK DE MIERDA!</DialogTitle>
-              <DialogDescription>
-                La cotizacion ha sido creada exitosamente!
+              <DialogTitle className='text-center'>La cotizacion ha sido creada exitosamente!</DialogTitle>
+              <DialogDescription className='text-center'>
+                Descargue la cotizacion en su formato preferido.
               </DialogDescription>
             </DialogHeader>
             <div className="flex justify-center space-x-4 py-4">
               <Button
                 onClick={() => handleDownload(files.excelUrl)}
-                className="bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                className="bg-green-600 text-white rounded-md hover:bg-green-700 transition flex gap-2"
               >
-                Download Excel
+                <Image 
+                  src="/icons/sheet.svg"
+                  height={20}
+                  width={20}
+                  alt='pdflogo'
+                />
+                <p>
+                  Download Excel  
+                </p>
               </Button>
               <Button
                 onClick={() => handleDownload(files.pdfUrl)}
-                className="bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                className="bg-red-600 text-white rounded-md hover:bg-red-700 transition flex gap-2"
               >
-                Download PDF
+                <Image 
+                  src="/icons/file.svg"
+                  height={20}
+                  width={20}
+                  alt='pdflogo'
+                />
+                <p>
+                  Download PDF
+                </p>
               </Button>
             </div>
-            <DialogFooter>
-              <Button onClick={handleClose} className="bg-gray-200 text-gray-800 hover:bg-gray-300">
-                Close
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
