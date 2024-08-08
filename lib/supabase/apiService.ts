@@ -121,3 +121,39 @@ export const getAPIFiles = async (apiData: APIData): Promise<{ excelUrl: string;
   return { excelUrl, pdfUrl };
 };
 
+export const downloadFile = async (url: string) => {
+  try {
+    console.log('trigger download');
+    console.log('URL', url);
+
+    // Fetch the file
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    // Create a blob from the response
+    const blob = await response.blob();
+    const urlParts = url.split('/');
+    const fileNameWithExtension = urlParts.pop();
+    const fileName = fileNameWithExtension || 'downloaded-file';
+
+    // Create a link element
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+
+    // Append the link to the document and trigger the download
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up and remove the link
+    link.parentNode?.removeChild(link);
+    window.URL.revokeObjectURL(link.href);
+
+    return true;
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+};

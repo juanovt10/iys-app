@@ -1,17 +1,20 @@
 'use client'
 
-import { getAPIFiles, saveClientData, saveQuoteData, updateItemData } from '@/lib/supabase/apiService';
-import { calculateTotals, formatWithCommas } from '@/lib/utils';
+import { downloadFile, getAPIFiles, saveClientData, saveQuoteData, updateItemData } from '@/lib/supabase/apiService';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
+import QuoteSummary from './QuoteSummary';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogTitle } from './ui/dialog';
 
 const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [files, setFiles] = useState<{ excelUrl: string; pdfUrl: string } | null>(null);
   const router = useRouter();
 
   const { client, items, remarks } = formData;
-  const { subtotal, aiu20, iva, total } = calculateTotals(items);
+
 
   const handleSubmit = async () => {
     console.log('trigger submit');
@@ -40,7 +43,10 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
       await saveQuoteData(quoteData);
       await updateItemData(items);
 
-      router.push('/quotes');
+      setFiles(files);
+      setShowSuccessDialog(true);
+
+      // router.push('/quotes');
     } catch (error) {
       console.log(error);
     } finally {
@@ -48,62 +54,30 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
     }
   };
 
+  const handleDownload = async (url: string) => {
+    await downloadFile(url); // Ensure downloadFile is awaited
+    router.push('/quotes'); // Redirect after the download
+  };
+
+  const handleClose = () => {
+    setShowSuccessDialog(false);
+    router.push('/quotes');
+  };
 
   return (
     <div className="p-4 max-w-4xl mx-auto bg-white shadow-md rounded-lg">
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4">Client Information</h3>
-        <div className="space-y-2">
-          <p><strong>Company Name:</strong> {client.nombre_empresa}</p>
-          <p><strong>Address:</strong> {client.direccion}</p>
-          <p><strong>Phone:</strong> {client.telefono}</p>
-          <p><strong>Email:</strong> {client.email}</p>
-          <p><strong>Contact Name:</strong> {client.nombre_contacto}</p>
-          <p><strong>NIT:</strong> {client.nit}</p>
-        </div>
-      </div>
-
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4">Items</h3>
-        {items.map((item: any, index: number) => (
-          <div key={index} className="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm">
-            <p><strong>Description:</strong> {item.descripcion}</p>
-            <p><strong>Quantity:</strong> {formatWithCommas(item.cantidad)}</p>
-            <p><strong>Unit Price:</strong> ${formatWithCommas(item.precio_unidad)}</p>
-          </div>
-        ))}
-      </div>
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4">Totales</h3>
-        <div className="space-y-2">
-          <p><strong>Subtotal:</strong> ${formatWithCommas(subtotal)}</p>
-          <p><strong>AIU (20%):</strong> ${formatWithCommas(aiu20)}</p>
-          <p><strong>IVA:</strong> ${formatWithCommas(iva)}</p>
-          <p><strong>Total:</strong> ${formatWithCommas(total)}</p>
-        </div>
-      </div>
-
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4">Remarks</h3>
-        <div className="space-y-2">
-          <p><strong>Validez:</strong> {remarks.validez}</p>
-          <p><strong>Anticipo:</strong> {remarks.anticipo}</p>
-          <p><strong>Pagos:</strong> {remarks.pagos}</p>
-          <p><strong>Premarcado:</strong> {remarks.premarcado}</p>
-          <p><strong>Tiempos:</strong> {remarks.tiempos}</p>
-          <p><strong>Cambios:</strong> {remarks.cambios}</p>
-          <p><strong>AIU:</strong> {remarks.AIU}</p>
-        </div>
-      </div>
+      <QuoteSummary 
+        quoteData={formData}
+      />
 
       <div className="flex justify-between">
-        <button 
+        <Button 
           type="button" 
           onClick={prevStep}
           className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
         >
           Back
-        </button>
+        </Button>
 
         <Button
           type='button'
@@ -117,6 +91,44 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
           )}
         </Button>
       </div>
+
+      {files && (
+        <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+          <DialogContent
+            className="sm:max-w-[425px]"
+            onInteractOutside={(e) => {
+              e.preventDefault();
+            }}
+            hideCloseButton
+          >
+            <DialogHeader>
+              <DialogTitle>CRACK DE MIERDA!</DialogTitle>
+              <DialogDescription>
+                La cotizacion ha sido creada exitosamente!
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-center space-x-4 py-4">
+              <Button
+                onClick={() => handleDownload(files.excelUrl)}
+                className="bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              >
+                Download Excel
+              </Button>
+              <Button
+                onClick={() => handleDownload(files.pdfUrl)}
+                className="bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              >
+                Download PDF
+              </Button>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleClose} className="bg-gray-200 text-gray-800 hover:bg-gray-300">
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
