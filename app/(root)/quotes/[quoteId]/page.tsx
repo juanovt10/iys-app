@@ -20,7 +20,7 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
       try {
         console.log('Fetching quote with id:', id);
         const { data, error } = await supabase
-          .from('clientes') // Adjust table name based on your Supabase setup
+          .from('clientes') 
           .select('*')
           .eq('nombre_empresa', quote.cliente)
           .single();
@@ -42,7 +42,7 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   }, [id, quote]);
 
   if (loading) {
-    return <p>Loading...</p>; // Display loading message while fetching data
+    return <p>Loading...</p>;
   }
 
   const quoteData = {
