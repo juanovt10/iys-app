@@ -118,6 +118,7 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
                   height={20}
                   width={20}
                   alt='pdflogo'
+                  className='invert'
                 />
                 <p>
                   Download Excel  
@@ -132,6 +133,7 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
                   height={20}
                   width={20}
                   alt='pdflogo'
+                  className='invert'
                 />
                 <p>
                   Download PDF

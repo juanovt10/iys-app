@@ -33,10 +33,10 @@ export interface Item {
 export interface Client {
   id: string;
   direccion: string;
-  telefono: string;
+  telefono: number;
   email: string;
   nombre_contacto: string;
   nombre_empresa: string;
-  nit: string;
+  nit: number;
 }
 

@@ -42,7 +42,7 @@ const Sidebar = () => {
                   src={item.imgURL}
                   alt={item.label}
                   fill
-                  className={cn({'brightness-[3] invert-0': isActive})}
+                  className={cn({'brightness-[3] invert': isActive})}
                 />
               </div>
               <p className={cn('sidebar-label', {'!text-white': isActive})}>
