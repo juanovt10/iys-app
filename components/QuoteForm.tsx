@@ -14,15 +14,13 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 
-const QuoteForm = () => {
+const QuoteForm = ({ client, quote }: { client: any, quote: any }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    client: {},
-    items: [],
-    remarks: {},
+    client: client ? client : {},
+    items: quote ? quote.items : [],
+    remarks: quote ? quote.remarks : {},
   });
-
-
 
   const nextStep = () => setStep((prevStep) => prevStep + 1);
   const prevStep = () => setStep((prevStep) => prevStep - 1);

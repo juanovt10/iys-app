@@ -19,8 +19,8 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   const params = useParams();
   const id = params.quoteId;
   const quote = searchParams.quote ? JSON.parse(searchParams.quote) : null;
-
-
+  
+  
   useEffect(() => {
     const fetchQuoteClient = async () => {
       try {
@@ -50,19 +50,24 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   if (loading) {
     return <p>Loading...</p>;
   }
-
+  
   const handleDownload = async (url: string) => {
     await downloadFile(url); // Ensure downloadFile is awaited
     router.push('/quotes'); // Redirect after the download
   };
-
+  
+  
+  
+    const handleEditQuote = () => {
+      router.push(`/quotes/edit/${id}`);
+    };
 
   const quoteData = {
     client: client,
     items: quote.items,
     remarks: quote.remarks
   }
-
+  
   return (
     <div className="p-4 max-w-4xl mx-auto bg-white shadow-md rounded-lg">
       <h1 className="text-2xl font-extrabold mb-5">Detalle de Cotización #{id}</h1>
@@ -108,7 +113,13 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
           Edit Quote
         </Button>
         <Link
-          href={`/quotes/create`}
+          href={{
+            pathname: `/quotes/edit/${id}`,
+            query: {
+              client: JSON.stringify(client),
+              quote: JSON.stringify(quote)
+            }
+          }}
           className='bg-gray-700 w-full mt-5'
         >
           Edit Quote
