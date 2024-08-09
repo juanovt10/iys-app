@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { downloadFile } from '@/lib/supabase/apiService';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   const [client, setClient] = useState<Client | null>(null);
@@ -55,6 +56,7 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
     router.push('/quotes'); // Redirect after the download
   };
 
+
   const quoteData = {
     client: client,
     items: quote.items,
@@ -100,10 +102,19 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
         </Button>
       </div>
       <div>
-        <Button className='bg-gray-700 w-full mt-5'>
+        <Button
+          className='bg-gray-700 w-full mt-5'
+        >
           Edit Quote
         </Button>
+        <Link
+          href={`/quotes/create`}
+          className='bg-gray-700 w-full mt-5'
+        >
+          Edit Quote
+        </Link>
       </div>
+
     </div>
   );
 };
