@@ -6,11 +6,7 @@ import QuoteForm from '@/components/QuoteForm';
 import supabase from '@/lib/supabase/client';
 import { CloudCog } from 'lucide-react';
 
-const EditQuotePage = ({ quoteParams }: { quoteParams: any }) => {
-  // const clientData = quoteParams.client ? JSON.parse(quoteParams.client) : null;
-  // const quoteData =quoteParams.quote ? JSON.parse(quoteParams.quote) : null;
-
-
+const EditQuotePage = () => {
   const searchParams = useSearchParams();
 
   const clientData = searchParams.get('client') ? JSON.parse(searchParams.get('client') as string) : null;

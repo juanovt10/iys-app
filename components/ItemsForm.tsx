@@ -14,7 +14,7 @@ import { Item } from '@/types';
 import { cn, formatWithCommas } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { ToastAction } from './ui/toast';
-import { ServerInsertedHTMLContext } from 'next/navigation';
+import SearchDropdown from './SearchDropdown';
 
 const FormSchema = z.object({
   items: z.array(z.object({
@@ -135,6 +135,16 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     <div className="relative">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          
+          {/* <SearchDropdown
+            items={filteredItems}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            onSelectItem={onSelectItem}
+            placeholder="Agregar item"
+            selectedValue={selectedValue}
+          /> */}
+          
           <FormItem className="flex flex-col">
             <FormLabel>Buscar Items</FormLabel>
             <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>

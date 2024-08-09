@@ -3,7 +3,10 @@ import QuoteForm from '@/components/QuoteForm';
 const CreateQuote = () => {
 
   return (
-    <QuoteForm />
+    <QuoteForm 
+      client={null}
+      quote={null}
+    />
   )
 };
 
