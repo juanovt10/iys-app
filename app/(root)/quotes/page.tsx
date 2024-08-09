@@ -9,9 +9,6 @@ import { Quote } from '@/types/index'
 import QuoteCard from '@/components/QuoteCard'
 import { useDebounce } from '@/hooks/useDebounce'
 
-
-
-
 const Quotes = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [search, setSearch] = useState<string>('');
