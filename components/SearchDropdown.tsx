@@ -1,77 +1,82 @@
 import React, { useState } from 'react';
+import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from '@/lib/utils';
 
-interface SearchDropdownProps {
-  items: any[];
+interface SearchDropdownProps<T> {
+  items: T[];
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  onSelectItem: (item: any) => void;
+  onSelectItem: (item: T) => void;
   placeholder: string;
-  selectedValue: string;
+  selectedValue?: string;
+  searchProperty: keyof T;
 }
 
-const SearchDropdown: React.FC<SearchDropdownProps> = ({
+const SearchDropdown = <T extends { id: number; descripcion: string }>({
   items,
   searchTerm,
   setSearchTerm,
   onSelectItem,
   placeholder,
   selectedValue,
-}) => {
+  searchProperty,
+}: SearchDropdownProps<T>) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
+  console.log('Items in SearchDropdown:', items);
+
   return (
-    <FormItem className="flex flex-col">
-      <FormLabel>{placeholder}</FormLabel>
-      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <PopoverTrigger asChild>
-          <FormControl>
-            <Button
-              variant="outline"
-              role="combobox"
-              className={cn(
-                "w-full justify-between border-red-500 bg-red-50 cursor-pointer",
-                !searchTerm && "text-muted-foreground"
-              )}
-            >
-              {selectedValue || placeholder}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </FormControl>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
-          <Command>
-            <CommandInput
-              placeholder={`Search ${placeholder.toLowerCase()}...`}
-            />
-            <CommandList>
-              <CommandEmpty>No items found.</CommandEmpty>
-              <CommandGroup>
-                {items
-                  .filter(item => item.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
-                  .map((item) => (
-                    <CommandItem
-                      value={item.descripcion}
-                      key={item.id}
-                      onSelect={() => onSelectItem(item)}
-                    >
-                      <Check className={`mr-2 h-4 w-4 ${item.descripcion === selectedValue ? "opacity-100" : "opacity-0"}`} />
-                      {item.descripcion}
-                    </CommandItem>
-                  ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      <FormMessage />
-    </FormItem>
+    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          className={cn(
+            "w-full justify-between border-red-500 bg-red-50 cursor-pointer",
+            !searchTerm && "text-muted-foreground"
+          )}
+        >
+          {searchTerm
+            ? String(items.find((item) => item[searchProperty] === searchTerm)?.[searchProperty])
+            : placeholder}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput
+            placeholder={`Buscar ${placeholder.toLowerCase()}...`}
+            value={searchTerm}
+            onValueChange={setSearchTerm}
+          />
+          <CommandList>
+            <CommandEmpty>No se encontraron {placeholder.toLowerCase()}.</CommandEmpty>
+            <CommandGroup>
+              {items
+                .filter(item => String(item[searchProperty])?.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((item) => (
+                  <CommandItem
+                    value={String(item[searchProperty])}
+                    key={item.id}
+                    onSelect={() => {
+                      onSelectItem(item);
+                      setIsPopoverOpen(false);
+                    }}
+                  >
+                    <Check className={`mr-2 h-4 w-4 ${String(item.id) === selectedValue ? "opacity-100" : "opacity-0"}`} />
+                    {String(item[searchProperty]) || 'Unnamed Item'}
+                  </CommandItem>
+                ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
+
 };
 
 export default SearchDropdown;

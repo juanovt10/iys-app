@@ -135,18 +135,20 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     <div className="relative">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          
-          {/* <SearchDropdown
-            items={filteredItems}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            onSelectItem={onSelectItem}
-            placeholder="Agregar item"
-            selectedValue={selectedValue}
-          /> */}
-          
           <FormItem className="flex flex-col">
             <FormLabel>Buscar Items</FormLabel>
+          
+            <SearchDropdown
+              items={filteredItems}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              onSelectItem={onSelectItem}
+              placeholder="Agregar item"
+              searchProperty='descripcion'
+            />
+
+
+            {/* works
             <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -189,98 +191,52 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
                   </CommandList>
                 </Command>
               </PopoverContent>
-            </Popover>
+            </Popover> */}
+
             <FormMessage />
           </FormItem>
 
           <div className="space-y-4 max-h-80 overflow-y-auto">
             {selectedItems.map((item, index) => (
-             <div key={index} className="flex flex-col space-y-4 border p-6 rounded-lg shadow-md">
-             <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-4 md:space-y-0">
-               <div className="flex-1 font-medium md:text-sm lg:text-lg text-gray-800">
-                 #{selectedItems.length - index} - {item.descripcion}
-               </div>
-               <div className="flex flex-col items-end gap-5 sm:flex-row sm:space-x-6 sm:space-y-0 md:space-x-6 md:flex-row md:justify-between">
-                 <div className="flex flex-row items-center space-x-2">
-                   <FormLabel className="text-sm font-semibold text-gray-600">{item.unidad}</FormLabel>
-                   <Input
-                     id={`item-${index}-cantidad`}
-                     type="text"
-                     placeholder="Quantity"
-                     value={formatWithCommas(item.cantidad)}
-                     onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
-                     className="w-full md:w-24 text-center"
-                   />
-                 </div>
-                 <div className="flex flex-row items-center space-x-2">
-                   <FormLabel className="text-sm font-semibold text-gray-600">Precio/{item.unidad}</FormLabel>
-                   <Input
-                     id={`item-${index}-precio_unidad`}
-                     type="text"
-                     placeholder="Price"
-                     value={formatWithCommas(item.precio_unidad)}
-                     onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
-                     className="w-full md:w-auto text-center"
-                   />
-                 </div>
-               </div>
-             </div>
-             <Button
-               variant="destructive"
-               type="button"
-               onClick={() => onRemoveItem(index)}
-               className="w-full md:w-auto mt-4 md:mt-0 md:ml-4"
-             >
-               Remove
-             </Button>
-           </div>
-           
-            
-
-              
-              
-
-
-
-              // <div key={index} className="flex flex-col space-y-4 border p-6 rounded-lg shadow-md">
-              //   <div className="flex justify-between items-start sm:flex-col">
-              //     <div className="flex-1 font-medium text-gray-800">
-              //       #{selectedItems.length - index} - {item.descripcion}
-              //     </div>
-              //     <div className="flex items-start space-x-6 sm:space-x-0 sm:space-y-6 sm:flex-col">
-              //       <div className="flex flex-col items-center space-y-2">
-              //         <FormLabel className="text-sm font-semibold text-gray-600">{item.unidad}</FormLabel>
-              //         <Input
-              //           id={`item-${index}-cantidad`}
-              //           type="text"
-              //           placeholder="Quantity"
-              //           value={formatWithCommas(item.cantidad)}
-              //           onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
-              //           className="w-24 text-center"
-              //         />
-              //       </div>
-              //       <div className="flex flex-col items-center space-y-2">
-              //         <FormLabel className="text-sm font-semibold text-gray-600">Precio/{item.unidad}</FormLabel>
-              //         <Input
-              //           id={`item-${index}-precio_unidad`}
-              //           type="text"
-              //           placeholder="Price"
-              //           value={formatWithCommas(item.precio_unidad)}
-              //           onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
-              //           className="w-full text-center"
-              //         />
-              //       </div>
-              //     </div>
-              //   </div>
-              //   <Button
-              //     variant="destructive"
-              //     type="button"
-              //     onClick={() => onRemoveItem(index)}
-              //     className="ml-4"
-              //   >
-              //     Remove
-              //   </Button>
-              // </div>
+              <div key={index} className="flex flex-col space-y-4 border p-6 rounded-lg shadow-md">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-4 md:space-y-0">
+                  <div className="flex-1 font-medium md:text-sm lg:text-lg text-gray-800">
+                    #{selectedItems.length - index} - {item.descripcion}
+                  </div>
+                  <div className="flex flex-col items-end gap-5 sm:flex-row sm:space-x-6 sm:space-y-0 md:space-x-6 md:flex-row md:justify-between">
+                    <div className="flex flex-row items-center space-x-2">
+                      <FormLabel className="text-sm font-semibold text-gray-600">{item.unidad}</FormLabel>
+                      <Input
+                        id={`item-${index}-cantidad`}
+                        type="text"
+                        placeholder="Quantity"
+                        value={formatWithCommas(item.cantidad)}
+                        onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
+                        className="w-full md:w-24 text-center"
+                      />
+                    </div>
+                    <div className="flex flex-row items-center space-x-2">
+                      <FormLabel className="text-sm font-semibold text-gray-600">Precio/{item.unidad}</FormLabel>
+                      <Input
+                        id={`item-${index}-precio_unidad`}
+                        type="text"
+                        placeholder="Price"
+                        value={formatWithCommas(item.precio_unidad)}
+                        onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
+                        className="w-full md:w-auto text-center"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="destructive"
+                  type="button"
+                  onClick={() => onRemoveItem(index)}
+                  className="w-full md:w-auto mt-4 md:mt-0 md:ml-4"
+                >
+                  Remove
+                </Button>
+              </div>
             ))}
           </div>
 
