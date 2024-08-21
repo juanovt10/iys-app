@@ -7,19 +7,18 @@ import { z } from 'zod';
 import CustomInput from '@/components/CustomInput';
 import { clientInfoSchema } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Form } from "@/components/ui/form"
+import { Form } from "@/components/ui/form";
 import supabase from '@/lib/supabase/client';
 import SearchDropdown from './SearchDropdown';
 
-const ClientInfoForm = ({ nextStep, updateFormData, clientData }: any) => {
-  const [isLoading, setIsLoading] = useState(false);
+const ClientInfoForm = ({ nextStep, updateFormData, clientData, step }: any) => {
   const [clients, setClients] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchClients = async () => {
       const { data, error } = await supabase
-        .from('clientes') // Assuming your table is named 'clients'
+        .from('clientes')
         .select('*');
 
       console.log('Fetched clients:', data);
@@ -49,18 +48,17 @@ const ClientInfoForm = ({ nextStep, updateFormData, clientData }: any) => {
   });
 
   const onSubmit = (data:z.infer<typeof clientInfoSchema>) => {
-    setIsLoading(true);
     updateFormData({ client: data });
     nextStep();
     console.log(data)
-  }
+  };
 
   console.log('CLIENTES', clients)
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <SearchDropdown 
+    <div className='flex flex-col h-full'>
+      <div className='mb-5'>
+        <SearchDropdown
           items={clients}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -69,57 +67,70 @@ const ClientInfoForm = ({ nextStep, updateFormData, clientData }: any) => {
           searchProperty='nombre_empresa'
         />
 
+      </div>
+      <div className="flex-grow overflow-y-auto pt-5 pb-20" >
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className=' space-y-8'>
+            <CustomInput 
+              control={form.control}
+              name="nombre_empresa"
+              label="Nombre de la empresa"
+              placeholder="Nombre de la empresa"
+            />
 
-        <CustomInput 
-          control={form.control}
-          name="nombre_empresa"
-          label="Nombre de la empresa"
-          placeholder="Nombre de la empresa"
-        />
+            <CustomInput 
+              control={form.control}
+              name="nombre_contacto"
+              label="Nombre del representante"
+              placeholder="Nombre del representante"
+            />
 
-        <CustomInput 
-          control={form.control}
-          name="nombre_contacto"
-          label="Nombre del representante"
-          placeholder="Nombre del representante"
-        />
+            <CustomInput 
+              control={form.control}
+              name="email"
+              label="Email"
+              placeholder="Email"
+            />
+            
+            <div className='flex gap-4 w-full'>
+              <CustomInput 
+                control={form.control}
+                name="nit"
+                label="Nit"
+                placeholder="Nit"
+              />
 
-        <CustomInput 
-          control={form.control}
-          name="email"
-          label="Email"
-          placeholder="Email"
-        />
-        
-        <div className='flex gap-4 w-full'>
-          <CustomInput 
-            control={form.control}
-            name="nit"
-            label="Nit"
-            placeholder="Nit"
-          />
-
-          <CustomInput 
-            control={form.control}
-            name="telefono"
-            label="Number de telefono"
-            placeholder="Number de telefono"
-          />
-        </div>
+              <CustomInput 
+                control={form.control}
+                name="telefono"
+                label="Number de telefono"
+                placeholder="Number de telefono"
+              />
+            </div>
 
 
-        <CustomInput 
-          control={form.control}
-          name="direccion"
-          label="Direccion"
-          placeholder="Direccion"
-        />
+            <CustomInput 
+              control={form.control}
+              name="direccion"
+              label="Direccion"
+              placeholder="Direccion"
+            />
 
-        <div className='flex justify-end'>
-          <Button type="submit">Continuar</Button>
-        </div>
-      </form>
-    </Form>
+
+            <div className='flex justify-end'>
+              <Button type="submit">Continuar</Button>
+            </div>
+            {/* <div className="absolute bottom-0 left-0 right-0 p-5 bg-white w-full">
+              <div className="flex justify-end">
+                <Button type="submit" variant="default">
+                  Continue
+                </Button>
+              </div>
+            </div> */}
+          </form>
+        </Form>
+      </div>
+    </div>
   )
 };
 

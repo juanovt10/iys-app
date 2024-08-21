@@ -21,7 +21,7 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
     console.log('trigger submit');
     setIsLoading(true);
 
-    // build data to send to API
+
     const apiData = {
       clientInfo: client,
       items: items,

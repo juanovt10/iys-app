@@ -30,15 +30,42 @@ export const formatWithCommas = (number: number): string => {
   return roundedNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+export const truncateText = (text: string, maxLength: number) => {
+  if (text.length <= maxLength) return text;
+  return `${text.substring(0, maxLength)}...`;
+};
 
+export const getDynamicMaxLength = () => {
+  const screenWidth = window.innerWidth;
+
+  if (screenWidth >= 1536) {
+    return 500; 
+  } else if (screenWidth >= 1280) {
+    return 140; 
+  } else if (screenWidth >= 768) {
+    return 80; 
+  } else {
+    return 40; 
+  }
+};
+
+
+
+// ----------------------------------------------------------
+// z form schemas
 export const clientInfoSchema = z.object({
-  nombre_empresa: z.string().min(10, "Company name is required").max(100, "Company name is too long"),
+  nombre_empresa: z.string().min(1, "Company name is required").max(100, "Company name is too long"),
   direccion: z.string().min(10, "Address is required").max(100, "Address is too long"),
   telefono: z.string().min(1, "Phone number is required"),
   email: z.string().email("Invalid email address"),
   nombre_contacto: z.string().min(4, "Contact name is required").max(50, "Contact name is too long"),
   nit: z.string().min(5, "NIT is required"),
 });
+
+export const authSchema = z.object({
+  email: z.string().email("Email invalido"),
+  password: z.string().min(8, "Contraseña debe tener al menos 8 caracteres"),
+})
 
 export const remarksSchema = z.object({
   validez: z.string().min(1),

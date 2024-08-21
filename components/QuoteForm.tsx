@@ -13,6 +13,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { Button } from './ui/button';
 
 const QuoteForm = ({ client, quote }: { client: any, quote: any }) => {
   const [step, setStep] = useState(1);
@@ -32,24 +33,44 @@ const QuoteForm = ({ client, quote }: { client: any, quote: any }) => {
     }));
   };
 
-  useEffect(() => {
-    console.log(formData);
-    console.log('post api url', process.env.NEXT_PUBLIC_DEPLOYED_API_URL);
 
-    // console.log('clientdata', client)
-    // console.log('quote data', quote)
-  }, [formData])
-
+  // works
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <ClientInfoForm nextStep={nextStep} updateFormData={updateFormData} clientData={formData.client} />;
+        return (
+          <ClientInfoForm 
+            nextStep={nextStep}
+            updateFormData={updateFormData}
+            clientData={formData.client}
+            step={step}
+          />
+        );
       case 2:
-        return <ItemsForm nextStep={nextStep} prevStep={prevStep} updateFormData={updateFormData} itemsData={formData.items} />;
+        return (
+          <ItemsForm
+            nextStep={nextStep}
+            prevStep={prevStep}
+            updateFormData={updateFormData}
+            itemsData={formData.items}
+          />
+        )
       case 3:
-        return <RemarksForm nextStep={nextStep} prevStep={prevStep} updateFormData={updateFormData} remarksData={formData.remarks} />;
+        return (
+          <RemarksForm
+            nextStep={nextStep}
+            prevStep={prevStep}
+            updateFormData={updateFormData}
+            remarksData={formData.remarks}
+          />
+        )
       case 4:
-        return <ReviewForm prevStep={prevStep} formData={formData} />;
+        return (
+          <ReviewForm
+            prevStep={prevStep}
+            formData={formData}
+          />
+        )
       default:
         return null;
     }
@@ -85,13 +106,42 @@ const QuoteForm = ({ client, quote }: { client: any, quote: any }) => {
     );
   };
 
-
   return (
-    <div className="flex flex-col gap-4 p-5 w-full">
-      <h1 className="text-2xl font-extrabold">Crear Cotización</h1>
-      {renderBreadcrumb()}
-      {renderStep()}
+    <div className="flex flex-col h-screen">
+      <div className="p-5">
+        <h1 className="text-2xl font-extrabold">Crear Cotización</h1>
+        {renderBreadcrumb()}
+      </div>
+      <div className="flex-grow overflow-y-auto p-5">
+        {renderStep()}
+      </div>
+      {/* <div className="p-5 bg-white shadow-md border-t">
+        <div className="flex justify-between">
+          {step > 1 && (
+            <Button onClick={prevStep} variant="secondary">
+              Back
+            </Button>
+          )}
+          {step < 4 && (
+            <Button onClick={nextStep} variant="default">
+              Continue
+            </Button>
+          )}
+          {step === 4 && (
+            <Button onClick={() => {}} variant="default">
+              Submit
+            </Button>
+          )}
+        </div>
+      </div> */}
     </div>
+
+
+    // <div className="flex flex-col gap-4 p-5 w-full">
+    //   <h1 className="text-2xl font-extrabold">Crear Cotización</h1>
+    //   {renderBreadcrumb()}
+    //   {renderStep()}
+    // </div>
   );
 };
 

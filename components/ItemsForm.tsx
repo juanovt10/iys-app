@@ -15,6 +15,7 @@ import { cn, formatWithCommas } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { ToastAction } from './ui/toast';
 import SearchDropdown from './SearchDropdown';
+import SelectedItemCard from './SelectedItemCard';
 
 const FormSchema = z.object({
   items: z.array(z.object({
@@ -27,7 +28,6 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [selectedItems, setSelectedItems] = useState<Item[]>(itemsData || []);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { toast } = useToast();
 
   const form = useForm({
@@ -71,17 +71,25 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     }
 
     setSearchTerm('');
-    setIsPopoverOpen(false);
     const newItems = [{ ...item, cantidad: item.cantidad || 1, precio_unidad: item.precio_unidad || 0 }, ...selectedItems];
     setSelectedItems(newItems);
     form.setValue('items', newItems);
   };
 
   const onUpdateItem = (index: number, field: keyof Item, value: string) => {
-    const numberValue = Number(value.replace(/,/g, '')); // Remove commas for parsing
+    // Filter out any non-numeric characters, except for commas (which are used in formatting)
+    const sanitizedValue = value.replace(/[^0-9,]/g, '');
+  
+    // Convert to a number, removing commas
+    const numberValue = Number(sanitizedValue.replace(/,/g, ''));
+  
+    // If the input is invalid, do not update the item
+    if (isNaN(numberValue)) return;
+  
     const updatedItems = selectedItems.map((item, idx) =>
       idx === index ? { ...item, [field]: numberValue } : item
     );
+  
     setSelectedItems(updatedItems);
     form.setValue('items', updatedItems);
   };
@@ -137,7 +145,6 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormItem className="flex flex-col">
             <FormLabel>Buscar Items</FormLabel>
-          
             <SearchDropdown
               items={filteredItems}
               searchTerm={searchTerm}
@@ -146,97 +153,19 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
               placeholder="Agregar item"
               searchProperty='descripcion'
             />
-
-
-            {/* works
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-              <PopoverTrigger asChild>
-                <FormControl>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className={cn(
-                      "w-full justify-between border-red-500 bg-red-50 cursor-pointer",
-                      !searchTerm && "text-muted-foreground"
-                    )}
-                  >
-                    {searchTerm
-                      ? filteredItems.find((item) => item.descripcion === searchTerm)?.descripcion
-                      : "Agregar item"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput
-                    placeholder="Buscar items..."
-                  />
-                  <CommandList>
-                    <CommandEmpty>No se encontraron items.</CommandEmpty>
-                    <CommandGroup>
-                      {filteredItems
-                        .filter(item => item.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
-                        .map((item) => (
-                          <CommandItem
-                            value={item.descripcion}
-                            key={item.id}
-                            onSelect={() => onSelectItem(item)}
-                          >
-                            <Check className={`mr-2 h-4 w-4 ${String(item.id) === searchTerm ? "opacity-100" : "opacity-0"}`} />
-                            {item.descripcion}
-                          </CommandItem>
-                        ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover> */}
-
             <FormMessage />
           </FormItem>
 
           <div className="space-y-4 max-h-80 overflow-y-auto">
             {selectedItems.map((item, index) => (
-              <div key={index} className="flex flex-col space-y-4 border p-6 rounded-lg shadow-md">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-4 md:space-y-0">
-                  <div className="flex-1 font-medium md:text-sm lg:text-lg text-gray-800">
-                    #{selectedItems.length - index} - {item.descripcion}
-                  </div>
-                  <div className="flex flex-col items-end gap-5 sm:flex-row sm:space-x-6 sm:space-y-0 md:space-x-6 md:flex-row md:justify-between">
-                    <div className="flex flex-row items-center space-x-2">
-                      <FormLabel className="text-sm font-semibold text-gray-600">{item.unidad}</FormLabel>
-                      <Input
-                        id={`item-${index}-cantidad`}
-                        type="text"
-                        placeholder="Quantity"
-                        value={formatWithCommas(item.cantidad)}
-                        onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
-                        className="w-full md:w-24 text-center"
-                      />
-                    </div>
-                    <div className="flex flex-row items-center space-x-2">
-                      <FormLabel className="text-sm font-semibold text-gray-600">Precio/{item.unidad}</FormLabel>
-                      <Input
-                        id={`item-${index}-precio_unidad`}
-                        type="text"
-                        placeholder="Price"
-                        value={formatWithCommas(item.precio_unidad)}
-                        onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
-                        className="w-full md:w-auto text-center"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <Button
-                  variant="destructive"
-                  type="button"
-                  onClick={() => onRemoveItem(index)}
-                  className="w-full md:w-auto mt-4 md:mt-0 md:ml-4"
-                >
-                  Remove
-                </Button>
-              </div>
+              <SelectedItemCard
+                key={index}
+                item={item}
+                index={index}
+                selectedItemsCount={selectedItems.length}
+                onUpdateItem={onUpdateItem}
+                onRemoveItem={onRemoveItem}
+              />
             ))}
           </div>
 

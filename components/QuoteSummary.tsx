@@ -8,14 +8,14 @@ const QuoteSummary = ({ quoteData }: any) => {
   return (
     <>
       <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4">Client Information</h3>
+        <h3 className="text-xl font-semibold mb-4">Informacion del Cliente</h3>
         <div className="space-y-2">
-          <p><strong>Company Name:</strong> {client.nombre_empresa}</p>
-          <p><strong>Address:</strong> {client.direccion}</p>
-          <p><strong>Phone:</strong> {client.telefono}</p>
+          <p><strong>Nombre Empresa:</strong> {client.nombre_empresa}</p>
+          <p><strong>Persona de contacto:</strong> {client.nombre_contacto}</p>
+          <p><strong>Telefono:</strong> {client.telefono}</p>
           <p><strong>Email:</strong> {client.email}</p>
-          <p><strong>Contact Name:</strong> {client.nombre_contacto}</p>
           <p><strong>NIT:</strong> {client.nit}</p>
+          <p><strong>Direccion:</strong> {client.direccion}</p>
         </div>
       </div>
 
@@ -23,9 +23,9 @@ const QuoteSummary = ({ quoteData }: any) => {
         <h3 className="text-xl font-semibold mb-4">Items</h3>
         {items.map((item: any, index: number) => (
           <div key={index} className="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm">
-            <p><strong>Description:</strong> {item.descripcion}</p>
-            <p><strong>Quantity:</strong> {formatWithCommas(item.cantidad)}</p>
-            <p><strong>Unit Price:</strong> ${formatWithCommas(item.precio_unidad)}</p>
+            <p><strong>Descripcion:</strong> {item.descripcion}</p>
+            <p><strong>Cantidad:</strong> {formatWithCommas(item.cantidad)}</p>
+            <p><strong>Precio por unidad:</strong> ${formatWithCommas(item.precio_unidad)}</p>
           </div>
         ))}
       </div>

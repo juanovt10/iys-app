@@ -3,7 +3,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { cn, getDynamicMaxLength, truncateText } from '@/lib/utils';
 
 interface SearchDropdownProps<T> {
   items: T[];
@@ -27,6 +27,9 @@ const SearchDropdown = <T extends { id: number; descripcion: string }>({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   console.log('Items in SearchDropdown:', items);
+  console.log(truncateText("This is a very long text that should be truncated", 20));
+
+  const maxLength = getDynamicMaxLength();
 
   return (
     <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
@@ -40,7 +43,7 @@ const SearchDropdown = <T extends { id: number; descripcion: string }>({
           )}
         >
           {searchTerm
-            ? String(items.find((item) => item[searchProperty] === searchTerm)?.[searchProperty])
+            ? truncateText(String(items.find((item) => item[searchProperty] === searchTerm)?.[searchProperty] || ''), maxLength)
             : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -67,7 +70,7 @@ const SearchDropdown = <T extends { id: number; descripcion: string }>({
                     }}
                   >
                     <Check className={`mr-2 h-4 w-4 ${String(item.id) === selectedValue ? "opacity-100" : "opacity-0"}`} />
-                    {String(item[searchProperty]) || 'Unnamed Item'}
+                    {truncateText(String(item[searchProperty]) || 'Unnamed Item', maxLength)} {/* Apply truncation */}
                   </CommandItem>
                 ))}
             </CommandGroup>

@@ -107,25 +107,21 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
         </Button>
       </div>
       <div>
-        <Button
-          className='bg-gray-700 w-full mt-5'
-        >
-          Edit Quote
-        </Button>
         <Link
           href={{
             pathname: `/quotes/edit/${id}`,
             query: {
               client: JSON.stringify(client),
-              quote: JSON.stringify(quote)
-            }
+              quote: JSON.stringify(quote),
+            },
           }}
-          className='bg-gray-700 w-full mt-5'
+          passHref // Ensures the link behaves correctly
         >
-          Edit Quote
+          <Button className='bg-gray-700 hover:bg-gray-900 w-full mt-5'>
+            Edit Quote
+          </Button>
         </Link>
       </div>
-
     </div>
   );
 };
