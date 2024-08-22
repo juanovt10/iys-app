@@ -55,7 +55,7 @@ const Sidebar = () => {
         })}
       </nav>
       
-      <Button onClick={() => logout()}>Sign Out</Button>
+      <Button onClick={() => logout()}>Cerrar sesión</Button>
     </section>
   );
 };
