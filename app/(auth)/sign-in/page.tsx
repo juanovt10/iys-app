@@ -2,10 +2,8 @@
 
 import CustomInput from '@/components/CustomInput'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { login, signup } from '@/lib/actions'
 import { authSchema } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -51,7 +49,7 @@ const SignIn = () => {
             height={60}
             alt='logo'
           />
-          <CardTitle>Iniciar session</CardTitle>
+          <CardTitle className='text-center'>Infraestructura y Señalizacion</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -69,16 +67,13 @@ const SignIn = () => {
                   <CustomInput
                     control={form.control}
                     name="password"
-                    label='Password'
-                    placeholder='Ingrese su email'
+                    label='Contraseña'
+                    placeholder='Ingrese su contraseña'
                   />
                 </div>
+                <Button className="w-full" type='submit'>Iniciar sesión</Button>
               </div>
               {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-              <CardFooter className="flex justify-beween">
-                <Button type='submit'>Sign In</Button>
-                <Button formAction={signup}>Sign Up</Button>
-              </CardFooter>
             </form>
           </Form>
         </CardContent>

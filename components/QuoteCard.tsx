@@ -14,14 +14,13 @@ const QuoteCard = ({ quote }: QuoteCardProps) => {
 
   return (
     <div key={quote.id} className="p-4 border border-gray-200 rounded shadow hover:shadow-lg hover:border-red-600">
-      {/* <Link href={`/quotes/${quote.id}`}> */}
       <Link href={{ pathname: `/quotes/${quote.id}`, query: { quote: JSON.stringify(quote) } }}>
         <div className="block  transition-shadow">
           <div className="flex justify-between">
             <div>
               <p className="text-lg font-semibold">Quote #{quote.id}</p>
               {quote.cliente.length > 0 && (
-                <p className="text-sm text-gray-600">Client: {quote.cliente}</p>
+                <p className="text-sm text-gray-600">Cliente: {quote.cliente}</p>
               )}
               <p className="text-sm text-gray-600">Items: {quote.items.length}</p>
               <p className="text-sm text-gray-600">Total: ${formatWithCommas(total)}</p>

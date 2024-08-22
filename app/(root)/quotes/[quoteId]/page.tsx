@@ -70,7 +70,7 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   }
   
   return (
-    <div className="p-4 max-w-4xl mx-auto bg-white shadow-md rounded-lg">
+    <div className="p-4 mx-auto bg-white shadow-md rounded-lg">
       <h1 className="text-2xl font-extrabold mb-5">Detalle de Cotización #{id}</h1>
       <QuoteSummary
         quoteData={quoteData}
@@ -88,7 +88,7 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
             className='invert'
           />
           <p>
-            Download Excel
+            Descargar Excel
           </p>
         </Button>
         <Button
@@ -103,7 +103,7 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
             className='invert'
           />
           <p>
-            Download PDF
+            Descargar PDF
           </p>
         </Button>
       </div>
@@ -116,10 +116,10 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
               quote: JSON.stringify(quote),
             },
           }}
-          passHref // Ensures the link behaves correctly
+          passHref
         >
           <Button className='bg-gray-700 hover:bg-gray-900 w-full mt-5'>
-            Edit Quote
+            Editar Cotización
           </Button>
         </Link>
       </div>

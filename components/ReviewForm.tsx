@@ -66,8 +66,8 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto bg-white shadow-md rounded-lg">
-      <QuoteSummary 
+    <div className="p-4 mx-auto bg-white shadow-md rounded-lg">
+      <QuoteSummary
         quoteData={formData}
       />
 
@@ -77,7 +77,7 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
           onClick={prevStep}
           className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
         >
-          Back
+          Atras
         </Button>
 
         <Button
@@ -86,9 +86,9 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
           disabled={isLoading}
         >
           {isLoading ? (
-            'Creating quote...'
+            'Creando cotizacion...'
           ) : (
-            'Create quote'
+            'Crear cotizacion'
           )}
         </Button>
       </div>
@@ -121,7 +121,7 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
                   className='invert'
                 />
                 <p>
-                  Download Excel  
+                  Descargar Excel  
                 </p>
               </Button>
               <Button
@@ -136,7 +136,7 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
                   className='invert'
                 />
                 <p>
-                  Download PDF
+                  Descargar PDF
                 </p>
               </Button>
             </div>

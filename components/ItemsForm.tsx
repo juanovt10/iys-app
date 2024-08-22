@@ -104,6 +104,16 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
   };
 
   const handleSubmitClick = async () => {
+    if (selectedItems.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Ningun Item ha sido añadido",
+        description: "Porfavor agregue items para continuar",
+        action: <ToastAction altText="Dismiss">Cerrar</ToastAction>,
+      });
+      return;
+    }
+
     const isValid = await form.trigger();
     if (!isValid) {
       selectedItems.forEach((item, index) => {
@@ -115,18 +125,18 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
         if (cantidadError) {
           toast({
             variant: "destructive",
-            title: `Item ${itemNumber} - Quantity Error`,
-            description: String(cantidadError),
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
+            title: `Item ${itemNumber} - Error en cantidad`,
+            description: 'Cantidad no puede ser 0',
+            action: <ToastAction altText="Try again">Cerrar</ToastAction>,
           });
         }
 
         if (precioError) {
           toast({
             variant: "destructive",
-            title: `Item ${itemNumber} - Price Error`,
-            description: String(precioError),
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
+            title: `Item ${itemNumber} - Error en precio`,
+            description: 'Precio no puede ser 0',
+            action: <ToastAction altText="Try again">Cerrar</ToastAction>,
           });
         }
       });
@@ -176,8 +186,14 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
           </div>
 
           <div className="flex-shrink-0 flex justify-between py-5 border-t">
-            <Button type="button" onClick={prevStep}>Back</Button>
-            <Button type="button" onClick={handleSubmitClick}>Continue</Button>
+            <Button
+              type="button"
+              onClick={prevStep}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
+            >
+              Atras
+            </Button>
+            <Button type="button" onClick={handleSubmitClick}>Continuar</Button>
           </div>
         </form>
       </Form>
