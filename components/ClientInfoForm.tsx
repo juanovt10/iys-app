@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,29 +8,49 @@ import CustomInput from '@/components/CustomInput';
 import { clientInfoSchema } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Form } from "@/components/ui/form";
-import supabase from '@/lib/supabase/client';
+// import supabase from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import SearchDropdown from './SearchDropdown';
 
 const ClientInfoForm = ({ nextStep, updateFormData, clientData, step }: any) => {
   const [clients, setClients] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const supabase = createClient();
+
+  const fetchClients = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('clientes')
+      .select('*');
+
+    console.log('Fetched clients:', data);
+    if (data) {
+      setClients(data);
+    } else {
+      console.error('Error fetching clients:', error);
+    }
+  }, [supabase]);
+
   useEffect(() => {
-    const fetchClients = async () => {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('*');
+    fetchClients(); // Run fetchClients when the component mounts
+  }, [fetchClients]); 
 
-      console.log('Fetched clients:', data);
-      if (data) {
-        setClients(data);
-      } else {
-        console.error('Error fetching clients:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchClients = async () => {
+  //     const { data, error } = await supabase
+  //       .from('clientes')
+  //       .select('*');
 
-    fetchClients();
-  }, []);
+  //     console.log('Fetched clients:', data);
+  //     if (data) {
+  //       setClients(data);
+  //     } else {
+  //       console.error('Error fetching clients:', error);
+  //     }
+  //   };
+
+  //   fetchClients();
+  // }, []);
 
   const onSelectClient = (client: any) => {
     form.setValue('nombre_empresa', client.nombre_empresa);

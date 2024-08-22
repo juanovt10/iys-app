@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Client, Quote } from '@/types/index';
-import supabase from '@/lib/supabase/client'; 
+// import supabase from '@/lib/supabase/client'; 
+import { createClient } from '@/lib/supabase/client';
 import QuoteSummary from '@/components/QuoteSummary';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -15,37 +16,64 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true); 
 
+  const supabase = createClient();
+
   const router = useRouter();
   const params = useParams();
   const id = params.quoteId;
   const quote = searchParams.quote ? JSON.parse(searchParams.quote) : null;
   
   
-  useEffect(() => {
-    const fetchQuoteClient = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('clientes') 
-          .select('*')
-          .eq('nombre_empresa', quote.cliente)
-          .single();
+  // useEffect(() => {
+  //   const fetchQuoteClient = async () => {
+  //     try {
+  //       const { data, error } = await supabase
+  //         .from('clientes') 
+  //         .select('*')
+  //         .eq('nombre_empresa', quote.cliente)
+  //         .single();
 
-        if (error) {
-          console.error('Error fetching quote details:', error);
-        } else {
-          console.log('Client data fetched:', data);
-          // console.log('Quote data fetched:', quote)
-          setClient(data);
-        }
-      } catch (err) {
-        console.error('An unexpected error occurred:', err);
-      } finally {
-        setLoading(false);
+  //       if (error) {
+  //         console.error('Error fetching quote details:', error);
+  //       } else {
+  //         console.log('Client data fetched:', data);
+  //         // console.log('Quote data fetched:', quote)
+  //         setClient(data);
+  //       }
+  //     } catch (err) {
+  //       console.error('An unexpected error occurred:', err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchQuoteClient();
+  // }, [quote.cliente]);
+
+  const fetchQuoteClient = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('nombre_empresa', quote.cliente)
+        .single();
+
+      if (error) {
+        console.error('Error fetching quote details:', error);
+      } else {
+        console.log('Client data fetched:', data);
+        setClient(data);
       }
-    };
+    } catch (err) {
+      console.error('An unexpected error occurred:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase, quote.cliente]);
 
+  useEffect(() => {
     fetchQuoteClient();
-  }, [quote.cliente]);
+  }, [fetchQuoteClient]);
 
   if (loading) {
     return <p>Loading...</p>;

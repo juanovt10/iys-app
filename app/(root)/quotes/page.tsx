@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from "@/components/ui/input"
-import supabase from '@/lib/supabase/client'
+// import supabase from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { Quote } from '@/types/index'
 import QuoteCard from '@/components/QuoteCard'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -13,10 +14,39 @@ const Quotes = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [search, setSearch] = useState<string>('');
 
+  const supabase = createClient()
+
   const debounceSearch = useDebounce(search, 500);
 
 
-  const fetchLatestQuotes = async (searchQuery: string = ''): Promise<void> => {
+  // const fetchLatestQuotes = async (searchQuery: string = ''): Promise<void> => {
+  //   let query = supabase
+  //     .from('cotizaciones')
+  //     .select('*')
+  //     .order('created_at', { ascending: false })
+  //     .limit(5);
+
+  //   if (searchQuery) {
+  //     console.log('Applying search filter:', searchQuery);
+  //     query = query.or(`cliente.ilike.%${searchQuery}%`);
+  //   }
+
+  //   const { data, error } = await query;
+
+  //   if (error) {
+  //     console.error('Error fetching quotes:', error.message);
+  //     return;
+  //   }
+
+  //   if (data) {
+  //     console.log('Fetched data:', data);
+  //     setQuotes(data as Quote[]);
+  //   } else {
+  //     console.warn('No data returned from Supabase.');
+  //   }
+  // };
+
+  const fetchLatestQuotes = useCallback(async (searchQuery: string = ''): Promise<void> => {
     let query = supabase
       .from('cotizaciones')
       .select('*')
@@ -41,11 +71,11 @@ const Quotes = () => {
     } else {
       console.warn('No data returned from Supabase.');
     }
-  };
+  }, [supabase]);
 
   useEffect(() => {
     fetchLatestQuotes(debounceSearch);
-  }, [debounceSearch])
+  }, [debounceSearch, fetchLatestQuotes])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);

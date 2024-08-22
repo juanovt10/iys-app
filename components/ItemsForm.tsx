@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from 'zod';
@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import supabase from '@/lib/supabase/client';
+// import supabase from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import { Item } from '@/types';
 import { cn, formatWithCommas } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
@@ -28,6 +29,9 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [selectedItems, setSelectedItems] = useState<Item[]>(itemsData || []);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const supabase = createClient();
+
   const { toast } = useToast();
 
   const form = useForm({
@@ -41,21 +45,37 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     }
   }, [itemsData]);
 
+  const fetchAllItems = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('items')
+      .select('*');
+
+    if (data) {
+      setFilteredItems(data);
+    } else {
+      console.error('Error fetching items:', error);
+    }
+  }, [supabase]); // Memoize the fetchAllItems function
+
   useEffect(() => {
-    const fetchAllItems = async () => {
-      const { data, error } = await supabase
-        .from('items')
-        .select('*');
+    fetchAllItems(); // Fetch items when the component mounts
+  }, [fetchAllItems]);
 
-      if (data) {
-        setFilteredItems(data);
-      } else {
-        console.error('Error fetching items:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchAllItems = async () => {
+  //     const { data, error } = await supabase
+  //       .from('items')
+  //       .select('*');
 
-    fetchAllItems();
-  }, []);
+  //     if (data) {
+  //       setFilteredItems(data);
+  //     } else {
+  //       console.error('Error fetching items:', error);
+  //     }
+  //   };
+
+  //   fetchAllItems();
+  // }, []);
 
   const onSelectItem = (item: Item) => {
     const isDuplicate = selectedItems.some(selectedItem => selectedItem.id === item.id);
