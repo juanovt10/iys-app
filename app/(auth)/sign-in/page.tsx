@@ -117,6 +117,18 @@ const SignIn = () => {
     }
   });
 
+  const onSubmit = async (data: z.infer<typeof authSchema>) => {
+    try {
+      const formData = new FormData();
+      formData.append('email', data.email);
+      formData.append('password', data.password);
+  
+      await login(formData); 
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to log in.');
+    }
+  };
+
 
   return (
     <div className='flex h-screen items-center justify-center'>
@@ -132,7 +144,7 @@ const SignIn = () => {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid w-full items-center gap-4">
                 <div className="flex flex-col space-y-1.5">
                   <CustomInput 
@@ -153,9 +165,7 @@ const SignIn = () => {
               </div>
               {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
               <CardFooter className="flex justify-beween">
-                {/* <Button variant="outline" onClick={() => router.push('/')}>Cancel</Button> */}
-
-                <Button formAction={login}>Sign In</Button>
+                <Button type='submit'>Sign In</Button>
                 <Button formAction={signup}>Sign Up</Button>
               </CardFooter>
             </form>
