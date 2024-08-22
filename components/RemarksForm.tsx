@@ -32,7 +32,7 @@ const RemarksForm = ({ nextStep, prevStep, updateFormData, remarksData }: any) =
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
-        <div className="space-y-4 max-h-96 overflow-y-auto">
+        <div className="space-y-4 max-h-full overflow-y-auto">
           <CustomTextarea
             control={form.control}
             name="validez"
@@ -77,7 +77,7 @@ const RemarksForm = ({ nextStep, prevStep, updateFormData, remarksData }: any) =
           />
         </div>
 
-        <div className="flex justify-between pt-20">
+        <div className="flex justify-between pt-5 border-t mt-5">
           <Button type="button" onClick={prevStep}>Back</Button>
           <Button type="submit">Continue</Button>
         </div>

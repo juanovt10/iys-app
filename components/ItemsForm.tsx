@@ -143,23 +143,26 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col h-full">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormItem className="flex flex-col">
-            <FormLabel>Buscar Items</FormLabel>
-            <SearchDropdown
-              items={filteredItems}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              onSelectItem={onSelectItem}
-              placeholder="Agregar item"
-              searchProperty='descripcion'
-            />
-            <FormMessage />
-          </FormItem>
+          <div className="flex-shrink-0">
+            <FormItem className="flex flex-col">
+              <FormLabel>Buscar Items</FormLabel>
+              <SearchDropdown
+                items={filteredItems}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                onSelectItem={onSelectItem}
+                placeholder="Agregar item"
+                searchProperty='descripcion'
+              />
+              <FormMessage />
+            </FormItem>
 
-          <div className="space-y-4 max-h-80 overflow-y-auto">
+          </div>
+
+          <div className="flex-grow space-y-4 max-h-96 overflow-y-auto">
             {selectedItems.map((item, index) => (
               <SelectedItemCard
                 key={index}
@@ -172,7 +175,7 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
             ))}
           </div>
 
-          <div className="flex justify-between pt-4">
+          <div className="flex-shrink-0 flex justify-between py-5 border-t">
             <Button type="button" onClick={prevStep}>Back</Button>
             <Button type="button" onClick={handleSubmitClick}>Continue</Button>
           </div>

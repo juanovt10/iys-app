@@ -8,6 +8,7 @@ import { sidebarLinks } from '@/constants';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { logout } from '@/lib/actions';
+import SignOutButton from './SignOut';
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -54,8 +55,7 @@ const Sidebar = () => {
           )
         })}
       </nav>
-      
-      <Button onClick={() => logout()}>Cerrar sesión</Button>
+      <SignOutButton />
     </section>
   );
 };

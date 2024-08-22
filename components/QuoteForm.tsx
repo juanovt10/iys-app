@@ -4,7 +4,7 @@ import ClientInfoForm from '@/components/ClientInfoForm';
 import ItemsForm from '@/components/ItemsForm';
 import RemarksForm from '@/components/RemarksForm';
 import ReviewForm from '@/components/ReviewForm';
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,6 +22,7 @@ const QuoteForm = ({ client, quote }: { client: any, quote: any }) => {
     items: quote ? quote.items : [],
     remarks: quote ? quote.remarks : {},
   });
+
 
   const nextStep = () => setStep((prevStep) => prevStep + 1);
   const prevStep = () => setStep((prevStep) => prevStep - 1);
@@ -43,7 +44,6 @@ const QuoteForm = ({ client, quote }: { client: any, quote: any }) => {
             nextStep={nextStep}
             updateFormData={updateFormData}
             clientData={formData.client}
-            step={step}
           />
         );
       case 2:
@@ -108,40 +108,14 @@ const QuoteForm = ({ client, quote }: { client: any, quote: any }) => {
 
   return (
     <div className="flex flex-col h-screen">
-      <div className="p-5">
+      <div className="px-5 pt-5">
         <h1 className="text-2xl font-extrabold">Crear Cotización</h1>
         {renderBreadcrumb()}
       </div>
       <div className="flex-grow overflow-y-auto p-5">
         {renderStep()}
       </div>
-      {/* <div className="p-5 bg-white shadow-md border-t">
-        <div className="flex justify-between">
-          {step > 1 && (
-            <Button onClick={prevStep} variant="secondary">
-              Back
-            </Button>
-          )}
-          {step < 4 && (
-            <Button onClick={nextStep} variant="default">
-              Continue
-            </Button>
-          )}
-          {step === 4 && (
-            <Button onClick={() => {}} variant="default">
-              Submit
-            </Button>
-          )}
-        </div>
-      </div> */}
     </div>
-
-
-    // <div className="flex flex-col gap-4 p-5 w-full">
-    //   <h1 className="text-2xl font-extrabold">Crear Cotización</h1>
-    //   {renderBreadcrumb()}
-    //   {renderStep()}
-    // </div>
   );
 };
 
