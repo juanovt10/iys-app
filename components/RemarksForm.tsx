@@ -32,7 +32,7 @@ const RemarksForm = ({ nextStep, prevStep, updateFormData, remarksData }: any) =
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
-        <div className="space-y-4 max-h-full overflow-y-auto">
+        <div className="space-y-4 max-h-full overflow-y-auto px-1">
           <CustomTextarea
             control={form.control}
             name="validez"

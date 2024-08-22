@@ -75,7 +75,7 @@ const ClientInfoForm = ({ nextStep, updateFormData, clientData, registerValidati
       <div className="flex-grow overflow-y-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
-            <div className="flex-grow space-y-8 overflow-y-auto">
+            <div className="flex-grow space-y-8 overflow-y-auto px-1">
               <CustomInput
                 control={form.control}
                 name="nombre_empresa"

@@ -56,7 +56,13 @@ export const getDynamicMaxLength = () => {
 export const clientInfoSchema = z.object({
   nombre_empresa: z.string().min(1, "Company name is required").max(100, "Company name is too long"),
   direccion: z.string().min(10, "Address is required").max(100, "Address is too long"),
-  telefono: z.string().min(1, "Phone number is required"),
+  telefono: z
+    .union([z.string(), z.number()])
+    .transform((val) => {
+      const parsed = typeof val === 'string' ? Number(val) : val;
+      if (isNaN(parsed)) throw new Error("Phone number must be a valid number");
+      return parsed;
+    }),
   email: z.string().email("Invalid email address"),
   nombre_contacto: z.string().min(4, "Contact name is required").max(50, "Contact name is too long"),
   nit: z.string().min(5, "NIT is required"),
