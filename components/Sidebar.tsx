@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { sidebarLinks } from '@/constants';
 import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
+import { logout } from '@/lib/actions';
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -52,6 +54,8 @@ const Sidebar = () => {
           )
         })}
       </nav>
+      
+      <Button onClick={() => logout()}>Sign Out</Button>
     </section>
   );
 };

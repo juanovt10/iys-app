@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-// import supabase from '@/lib/supabase/client';
 import { createClient } from '@/lib/supabase/client';
 import { Item } from '@/types';
 import { cn, formatWithCommas } from '@/lib/utils';
@@ -60,22 +59,6 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
   useEffect(() => {
     fetchAllItems(); // Fetch items when the component mounts
   }, [fetchAllItems]);
-
-  // useEffect(() => {
-  //   const fetchAllItems = async () => {
-  //     const { data, error } = await supabase
-  //       .from('items')
-  //       .select('*');
-
-  //     if (data) {
-  //       setFilteredItems(data);
-  //     } else {
-  //       console.error('Error fetching items:', error);
-  //     }
-  //   };
-
-  //   fetchAllItems();
-  // }, []);
 
   const onSelectItem = (item: Item) => {
     const isDuplicate = selectedItems.some(selectedItem => selectedItem.id === item.id);

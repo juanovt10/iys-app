@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Client, Quote } from '@/types/index';
-// import supabase from '@/lib/supabase/client'; 
 import { createClient } from '@/lib/supabase/client';
 import QuoteSummary from '@/components/QuoteSummary';
 import { Button } from '@/components/ui/button';
@@ -22,33 +21,7 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   const params = useParams();
   const id = params.quoteId;
   const quote = searchParams.quote ? JSON.parse(searchParams.quote) : null;
-  
-  
-  // useEffect(() => {
-  //   const fetchQuoteClient = async () => {
-  //     try {
-  //       const { data, error } = await supabase
-  //         .from('clientes') 
-  //         .select('*')
-  //         .eq('nombre_empresa', quote.cliente)
-  //         .single();
 
-  //       if (error) {
-  //         console.error('Error fetching quote details:', error);
-  //       } else {
-  //         console.log('Client data fetched:', data);
-  //         // console.log('Quote data fetched:', quote)
-  //         setClient(data);
-  //       }
-  //     } catch (err) {
-  //       console.error('An unexpected error occurred:', err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchQuoteClient();
-  // }, [quote.cliente]);
 
   const fetchQuoteClient = useCallback(async () => {
     try {

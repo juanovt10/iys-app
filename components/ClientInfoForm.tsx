@@ -8,7 +8,6 @@ import CustomInput from '@/components/CustomInput';
 import { clientInfoSchema } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Form } from "@/components/ui/form";
-// import supabase from '@/lib/supabase/client';
 import { createClient } from '@/lib/supabase/client';
 import SearchDropdown from './SearchDropdown';
 
@@ -35,22 +34,6 @@ const ClientInfoForm = ({ nextStep, updateFormData, clientData, step }: any) => 
     fetchClients(); // Run fetchClients when the component mounts
   }, [fetchClients]); 
 
-  // useEffect(() => {
-  //   const fetchClients = async () => {
-  //     const { data, error } = await supabase
-  //       .from('clientes')
-  //       .select('*');
-
-  //     console.log('Fetched clients:', data);
-  //     if (data) {
-  //       setClients(data);
-  //     } else {
-  //       console.error('Error fetching clients:', error);
-  //     }
-  //   };
-
-  //   fetchClients();
-  // }, []);
 
   const onSelectClient = (client: any) => {
     form.setValue('nombre_empresa', client.nombre_empresa);

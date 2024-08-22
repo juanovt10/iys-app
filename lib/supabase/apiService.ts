@@ -1,6 +1,8 @@
 import { Client, Item, Quote } from '@/types';
-import supabase from './client';
+import { createClient } from '@/lib/supabase/client'
+// import supabase from './client';
 
+const supabase = createClient();
 
 // save the client data
 export const saveClientData = async (data: Client): Promise<Client | null> => {
