@@ -16,6 +16,7 @@ import { z } from 'zod'
 const SignIn = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
 
   const form = useForm<z.infer<typeof authSchema>>({
@@ -27,6 +28,8 @@ const SignIn = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof authSchema>) => {
+    setIsLoading(true);
+
     try {
       const formData = new FormData();
       formData.append('email', data.email);
@@ -35,6 +38,8 @@ const SignIn = () => {
       await login(formData); 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to log in.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,7 +76,17 @@ const SignIn = () => {
                     placeholder='Ingrese su contraseña'
                   />
                 </div>
-                <Button className="w-full" type='submit'>Iniciar sesión</Button>
+                <Button
+                  className="w-full"
+                  type='submit'
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    'Iniciando sesión...'
+                  ) : (
+                    'Iniciar sesión'
+                  )}
+                </Button>
               </div>
               {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             </form>
