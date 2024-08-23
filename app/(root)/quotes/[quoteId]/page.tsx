@@ -34,7 +34,6 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
       if (error) {
         console.error('Error fetching quote details:', error);
       } else {
-        console.log('Client data fetched:', data);
         setClient(data);
       }
     } catch (err) {

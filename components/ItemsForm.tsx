@@ -16,6 +16,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { ToastAction } from './ui/toast';
 import SearchDropdown from './SearchDropdown';
 import SelectedItemCard from './SelectedItemCard';
+import { Dialog } from './ui/dialog';
+import AddItemForm from './AddItemForm';
 
 const FormSchema = z.object({
   items: z.array(z.object({
@@ -27,10 +29,10 @@ const FormSchema = z.object({
 const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [selectedItems, setSelectedItems] = useState<Item[]>(itemsData || []);
+  const [showAddItemDialog, setShowAddItemDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   const supabase = createClient();
-
   const { toast } = useToast();
 
   const form = useForm({
@@ -54,10 +56,10 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     } else {
       console.error('Error fetching items:', error);
     }
-  }, [supabase]); // Memoize the fetchAllItems function
+  }, [supabase]);
 
   useEffect(() => {
-    fetchAllItems(); // Fetch items when the component mounts
+    fetchAllItems();
   }, [fetchAllItems]);
 
   const onSelectItem = (item: Item) => {
@@ -80,13 +82,8 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
   };
 
   const onUpdateItem = (index: number, field: keyof Item, value: string) => {
-    // Filter out any non-numeric characters, except for commas (which are used in formatting)
     const sanitizedValue = value.replace(/[^0-9,]/g, '');
-  
-    // Convert to a number, removing commas
     const numberValue = Number(sanitizedValue.replace(/,/g, ''));
-  
-    // If the input is invalid, do not update the item
     if (isNaN(numberValue)) return;
   
     const updatedItems = selectedItems.map((item, idx) =>
@@ -102,6 +99,13 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     setSelectedItems(updatedItems);
     form.setValue('items', updatedItems);
   };
+
+  const onAddNewItem = (item: any) => {
+    setSelectedItems((prevItems) => [...prevItems, item]);
+    setShowAddItemDialog(false);
+    form.setValue('items', [...selectedItems, item]);
+  };
+
 
   const handleSubmitClick = async () => {
     if (selectedItems.length === 0) {
@@ -143,7 +147,6 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
       return;
     }
 
-    // If no validation errors, submit the form
     form.handleSubmit(onSubmit)();
   };
 
@@ -156,7 +159,7 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     <div className="relative flex flex-col h-full">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 space-y-3">
             <FormItem className="flex flex-col">
               <FormLabel>Buscar Items</FormLabel>
               <SearchDropdown
@@ -164,13 +167,16 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 onSelectItem={onSelectItem}
-                placeholder="Agregar item"
+                placeholder="Agregar item existente"
                 searchProperty='descripcion'
               />
               <FormMessage />
             </FormItem>
-
+            <Button type='button' className="w-full" onClick={() => setShowAddItemDialog(true)}>
+              Agregar nuevo item
+            </Button>
           </div>
+
 
           <div className="flex-grow space-y-4 max-h-96 overflow-y-auto">
             {selectedItems.map((item, index) => (
@@ -197,6 +203,12 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
           </div>
         </form>
       </Form>
+
+      <Dialog open={showAddItemDialog} onOpenChange={setShowAddItemDialog}>
+        <AddItemForm onAddItem={onAddNewItem}/>
+      </Dialog>
+
+
     </div>
   );
 };

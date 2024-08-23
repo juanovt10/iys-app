@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input';
 import { FormLabel } from '@/components/ui/form';
 import { Item } from '@/types';
 import { formatWithCommas } from '@/lib/utils';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import Image from 'next/image';
+import CustomNumberInput from './CustomNumberInput';
 
 interface SelectedItemCardProps {
   item: Item;
@@ -20,45 +23,70 @@ const SelectedItemCard: React.FC<SelectedItemCardProps> = ({
   onUpdateItem,
   onRemoveItem
 }) => {
+
+
   return (
-    <div className="flex flex-col space-y-4 border p-6 rounded-lg shadow-md">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-4 md:space-y-0">
-        <div className="flex-1 font-medium md:text-sm lg:text-lg text-gray-800">
+    <div className="flex flex-col border p-6 rounded-lg shadow-md space-y-4">
+      <div className="flex justify-between items-start">
+        <div className="flex-1 font-medium text-sm lg:text-lg text-gray-800">
           #{selectedItemsCount - index} - {item.descripcion}
         </div>
-        <div className="flex flex-col items-end gap-5 sm:flex-row sm:space-x-6 sm:space-y-0 md:space-x-6 md:flex-row md:justify-between">
-          <div className="flex flex-row items-center space-x-2">
-            <FormLabel className="text-sm font-semibold text-gray-600">{item.unidad}</FormLabel>
+        <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="destructive"
+              type="button"
+              onClick={() => onRemoveItem(index)}
+              className="p-2"
+            >
+              <Image 
+                src='/icons/trash.svg'
+                width={20}
+                height={20}
+                alt='deleteLogo'
+                className='invert'
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Borrar item</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      </div>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-4 md:space-y-0 md:space-x-6">
+        <div className="flex flex-col md:w-1/2">
+          <FormLabel className="text-sm font-semibold text-gray-600 md:text-left md:mb-1">
+            {item.unidad}
+          </FormLabel>
+          <div className="flex items-center space-x-2">
             <Input
               id={`item-${index}-cantidad`}
               type="text"
               placeholder="Quantity"
               value={formatWithCommas(item.cantidad)}
               onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
-              className="w-full md:w-24 text-center"
+              className="w-full text-center"
             />
           </div>
-          <div className="flex flex-row items-center space-x-2">
-            <FormLabel className="text-sm font-semibold text-gray-600">Precio/{item.unidad}</FormLabel>
+        </div>
+        <div className="flex flex-col md:w-1/2">
+          <FormLabel className="text-sm font-semibold text-gray-600 md:text-left md:mb-1">
+            Precio/{item.unidad}
+          </FormLabel>
+          <div className="flex items-center space-x-2">
             <Input
               id={`item-${index}-precio_unidad`}
               type="text"
               placeholder="Price"
               value={formatWithCommas(item.precio_unidad)}
               onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
-              className="w-full md:w-auto text-center"
+              className="w-full text-center"
             />
           </div>
         </div>
       </div>
-      <Button
-        variant="destructive"
-        type="button"
-        onClick={() => onRemoveItem(index)}
-        className="w-full md:w-auto mt-4 md:mt-0 md:ml-4"
-      >
-        Remove
-      </Button>
     </div>
   );
 };

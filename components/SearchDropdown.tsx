@@ -26,9 +26,6 @@ const SearchDropdown = <T extends { id: number; descripcion: string }>({
 }: SearchDropdownProps<T>) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  console.log('Items in SearchDropdown:', items);
-  console.log(truncateText("This is a very long text that should be truncated", 20));
-
   const maxLength = getDynamicMaxLength();
 
   return (

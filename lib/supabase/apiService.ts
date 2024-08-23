@@ -49,6 +49,52 @@ export const updateItemData = async (items: Item[]): Promise<void> => {
   }
 };
 
+export const saveOrUpdateItemData = async (items: Item[]): Promise<Item[]> => {
+  try {
+    const savedItems: Item[] = [];
+
+    for (const item of items) {
+      let returnedData: Item[] | null = null;
+      let error: any = null;
+
+      if (item.id) {
+        // Update existing item
+        const { data, error: updateError } = await supabase
+          .from('items')
+          .update(item)
+          .eq('id', item.id);
+
+        returnedData = data as Item[] | null;  // Explicitly cast data
+        error = updateError;
+      } else {
+        // Insert new item
+        const { data, error: insertError } = await supabase
+          .from('items')
+          .insert([item]);
+
+        returnedData = data as Item[] | null;  // Explicitly cast data
+        error = insertError;
+      }
+
+      if (error) {
+        throw error;
+      }
+
+      if (returnedData && returnedData.length > 0) {
+        savedItems.push(...returnedData);  // Push all returned items
+      }
+    }
+
+    return savedItems;
+  } catch (error) {
+    console.error('Failed to save or update items:', error);
+    throw error;
+  }
+};
+
+
+
+
 
 export const saveQuoteData = async (quoteData: Quote): Promise<Quote | null> => {
   try {
@@ -82,10 +128,6 @@ interface APIData {
 }
 
 export const getAPIFiles = async (apiData: APIData): Promise<{ excelUrl: string; pdfUrl: string }> => {
-  console.log('API method triggered');
-  console.log('json data', apiData);
-  console.log('JSON data to send', JSON.stringify(apiData));
-
   const response = await fetch(`${process.env.NEXT_PUBLIC_DEPLOYED_API_URL}/api/excel`, {
     method: 'POST',
     headers: {
@@ -94,17 +136,14 @@ export const getAPIFiles = async (apiData: APIData): Promise<{ excelUrl: string;
     body: JSON.stringify(apiData),
   });
 
-  console.log('API method triggered');
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.log('API response error:', errorText);
     throw new Error('Failed to send data to API');
   }
 
   const data = await response.json();
 
-  console.log('DATA response', data);
 
   const getKeyFromUrl = (url: string): string => {
     const urlObj = new URL(url);
@@ -114,9 +153,6 @@ export const getAPIFiles = async (apiData: APIData): Promise<{ excelUrl: string;
   const excelKey = getKeyFromUrl(data.excelUrl);
   const pdfKey = getKeyFromUrl(data.pdfUrl);
 
-  console.log('Excel key', excelKey);
-  console.log('pdf key', pdfKey);
-
   const excelUrl = `${process.env.NEXT_PUBLIC_S3_PROXY_API_URL}/download/${excelKey}`;
   const pdfUrl = `${process.env.NEXT_PUBLIC_S3_PROXY_API_URL}/download/${pdfKey}`;
 
@@ -125,9 +161,6 @@ export const getAPIFiles = async (apiData: APIData): Promise<{ excelUrl: string;
 
 export const downloadFile = async (url: string) => {
   try {
-    console.log('trigger download');
-    console.log('URL', url);
-
     // Fetch the file
     const response = await fetch(url);
     if (!response.ok) {

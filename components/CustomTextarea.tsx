@@ -1,18 +1,23 @@
 import React from 'react'
 import { FormControl, FormField, FormLabel, FormMessage } from './ui/form'
 import { Textarea } from './ui/textarea'
-import { remarksSchema } from '@/lib/utils'
-import { z } from 'zod'
-import { Control, FieldPath } from 'react-hook-form'
+import { Control, FieldPath, FieldValues } from 'react-hook-form'
 
-interface CustomTextarea {
-  control: Control<z.infer<typeof remarksSchema>>,
-  name: FieldPath<z.infer<typeof remarksSchema>>,
-  label: string,
-  placeholder: string,
+interface CustomTextareaProps<T extends FieldValues> {
+  control: Control<T>;
+  name: FieldPath<T>;
+  label: string;
+  placeholder: string;
 }
 
-const CustomTextarea = ({ control, name, label, placeholder}: CustomTextarea) => {
+
+// const CustomTextarea = ({ control, name, label, placeholder}: CustomTextarea) => {
+const CustomTextarea = <T extends FieldValues>({
+  control,
+  name,
+  label,
+  placeholder,
+}: CustomTextareaProps<T>) => {
   return (
     <FormField
       control={control}

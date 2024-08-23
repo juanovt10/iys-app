@@ -22,7 +22,6 @@ const ClientInfoForm = ({ nextStep, updateFormData, clientData, registerValidati
       .from('clientes')
       .select('*');
 
-    console.log('Fetched clients:', data);
     if (data) {
       setClients(data);
     } else {
@@ -53,11 +52,7 @@ const ClientInfoForm = ({ nextStep, updateFormData, clientData, registerValidati
   const onSubmit = (data:z.infer<typeof clientInfoSchema>) => {
     updateFormData({ client: data });
     nextStep();
-    console.log(data)
   };
-
-
-  console.log('CLIENTES', clients)
 
   return (
     <div className="flex flex-col h-full">

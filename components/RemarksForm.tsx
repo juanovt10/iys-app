@@ -17,8 +17,6 @@ const RemarksForm = ({ nextStep, prevStep, updateFormData, remarksData }: any) =
     AIU: "A.I.U. compuesto 10% Administracion 5% Imprevistos y 5% Utilidad",
   }
 
-  console.log('remakrs data', remarksData)
-
   const form = useForm<z.infer<typeof remarksSchema>>({
     resolver: zodResolver(remarksSchema),
     defaultValues: Object.keys(remarksData).length > 0 ? remarksData : defaultValues,

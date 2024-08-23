@@ -2,7 +2,6 @@ import React from 'react';
 import {
   FormControl,
   FormField,
-  FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
@@ -10,19 +9,30 @@ import { Input } from '@/components/ui/input';
 import { Control, FieldPath, FieldValues } from 'react-hook-form';
 import { formatWithCommas } from '@/lib/utils';
 
-interface CustomInputProps<T extends FieldValues> {
+interface CustomNumberInputProps<T extends FieldValues> {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;
   placeholder: string;
 }
 
-const CustomInput = <T extends FieldValues>({
+const CustomNumberInput = <T extends FieldValues>({
   control,
   name,
   label,
   placeholder,
-}: CustomInputProps<T>) => {
+}: CustomNumberInputProps<T>) => {
+  // Handle number input with formatting
+  const handleNumberChange = (event: React.ChangeEvent<HTMLInputElement>, onChange: (value: number) => void) => {
+    const inputValue = event.target.value;
+    const sanitizedValue = inputValue.replace(/[^0-9]/g, '');
+    const numberValue = Number(sanitizedValue);
+
+    if (!isNaN(numberValue)) {
+      onChange(numberValue);
+    }
+  };
+
   return (
     <FormField
       control={control}
@@ -37,8 +47,9 @@ const CustomInput = <T extends FieldValues>({
               <Input
                 placeholder={placeholder}
                 className="text-16 placeholder:text-16 rounded-lg border border-gray-300 text-gray-900 placeholder:text-gray-500"
-                type={name === 'password' ? 'password' : 'text'}
-                {...field}
+                type="text" // Always use text to allow formatting
+                value={formatWithCommas(field.value?.toString() || '')}
+                onChange={(e) => handleNumberChange(e, field.onChange)}
               />
             </FormControl>
             <FormMessage className="text-12 text-red-500 mt-2" />
@@ -49,4 +60,4 @@ const CustomInput = <T extends FieldValues>({
   );
 };
 
-export default CustomInput;
+export default CustomNumberInput;

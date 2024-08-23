@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString(undefined, options);
+  return new Date(dateString).toLocaleDateString('es-ES', options);
 };
 
 
@@ -82,4 +82,12 @@ export const remarksSchema = z.object({
   cambios: z.string().min(1),
   AIU: z.string().min(1),
 })
+
+export const itemSchema = z.object({
+  descripcion: z.string().min(5, 'Descripcion es requerida').max(200),
+  unidad: z.string().min(1, 'Unidad es requerida'),
+  precio_unidad: z.number().min(1, 'Precio por unidad es requerido'),
+  cantidad: z.number().min(1, 'Cantidad es requerida'),
+  categoria: z.string().min(1, 'Escoja una categoria para el item'),
+});
 

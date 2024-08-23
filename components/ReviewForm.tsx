@@ -1,6 +1,6 @@
 'use client'
 
-import { downloadFile, getAPIFiles, saveClientData, saveQuoteData, updateItemData } from '@/lib/supabase/apiService';
+import { downloadFile, getAPIFiles, saveClientData, saveQuoteData, updateItemData, saveOrUpdateItemData } from '@/lib/supabase/apiService';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
@@ -18,7 +18,6 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
 
 
   const handleSubmit = async () => {
-    console.log('trigger submit');
     setIsLoading(true);
 
 
@@ -42,7 +41,8 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
       };
 
       await saveQuoteData(quoteData);
-      await updateItemData(items);
+      await saveOrUpdateItemData(items);
+      // await updateItemData(items);
 
       setFiles(files);
       setShowSuccessDialog(true);

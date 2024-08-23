@@ -18,7 +18,7 @@ const QuoteCard = ({ quote }: QuoteCardProps) => {
         <div className="block  transition-shadow">
           <div className="flex justify-between">
             <div>
-              <p className="text-lg font-semibold">Quote #{quote.id}</p>
+              <p className="text-lg font-semibold">Cotizacion #{quote.id}</p>
               {quote.cliente.length > 0 && (
                 <p className="text-sm text-gray-600">Cliente: {quote.cliente}</p>
               )}

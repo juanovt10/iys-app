@@ -25,7 +25,6 @@ const Quotes = () => {
       .limit(5);
 
     if (searchQuery) {
-      console.log('Applying search filter:', searchQuery);
       query = query.or(`cliente.ilike.%${searchQuery}%`);
     }
 
@@ -37,7 +36,6 @@ const Quotes = () => {
     }
 
     if (data) {
-      console.log('Fetched data:', data);
       setQuotes(data as Quote[]);
     } else {
       console.warn('No data returned from Supabase.');
