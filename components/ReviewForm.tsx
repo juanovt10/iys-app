@@ -2,26 +2,58 @@
 
 import { downloadFile, getAPIFiles, saveClientData, saveQuoteData, updateItemData, saveOrUpdateItemData } from '@/lib/supabase/apiService';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import QuoteSummary from './QuoteSummary';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogTitle } from './ui/dialog';
 import Image from 'next/image';
+import { createClient } from '@/lib/supabase/client';
 
 const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [files, setFiles] = useState<{ excelUrl: string; pdfUrl: string } | null>(null);
+  const [latestQuoteId, setLatestQuoteId] = useState<number | null>(null);
   const router = useRouter();
 
   const { client, items, remarks } = formData;
 
+  const supabase = createClient();
+
+  const fetchLatestQuoteId = useCallback(async (): Promise<void> => {
+    try {
+      const { data, error } = await supabase
+        .from('cotizaciones')
+        .select('id')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error fetching the latest quote ID:', error.message);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setLatestQuoteId(data[0].id);
+      } else {
+        console.warn('No data returned from Supabase.');
+      }
+    } catch (err) {
+      console.error('An error occurred while fetching the latest quote ID:', err);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchLatestQuoteId();
+  }, [fetchLatestQuoteId]);
 
   const handleSubmit = async () => {
     setIsLoading(true);
 
+    const nextQuoteId = latestQuoteId !== null ? latestQuoteId + 1 : 1;
 
     const apiData = {
+      quoteId: nextQuoteId,
       clientInfo: client,
       items: items,
       remarks: remarks,
@@ -64,6 +96,7 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
     setShowSuccessDialog(false);
     router.push('/quotes');
   };
+
 
   return (
     <div className="p-4 mx-auto bg-white shadow-md rounded-lg">
