@@ -55,11 +55,13 @@ const Quotes = () => {
     <div className='flex flex-col gap-4 p-5 w-full'>
       <h1 className='text-2xl font-extrabold'>Cotizaciones</h1>
       <div className='flex flex-col gap-4'>
-        <Button
-          className='w-full bg-companyGradient border border-gray-200 rounded-md shadow'
-        >
-          <Link href={'/quotes/create'}>Crear Cotizacion</Link>
-        </Button>
+        <Link href={'/quotes/create'} passHref>
+          <Button
+            className='w-full bg-companyGradient border border-gray-200 rounded-md shadow'
+          >
+            Crear Cotizacion
+          </Button>
+        </Link>
 
         <Input
           type="text"

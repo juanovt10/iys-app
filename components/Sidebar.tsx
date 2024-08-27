@@ -6,8 +6,6 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { sidebarLinks } from '@/constants';
 import { cn } from '@/lib/utils';
-import { Button } from './ui/button';
-import { logout } from '@/lib/actions';
 import SignOutButton from './SignOut';
 
 const Sidebar = () => {
@@ -16,17 +14,19 @@ const Sidebar = () => {
   return (
     <section className="sidebar">
       <nav className="flex flex-col gap-4">
-        <Link
-          href={"/"}
-          className='mb-5 cursor-pointer flex items-center gap-2'
-        >
-          <Image
-            src='/images/logo.png'
-            width={100}
-            height={100}
-            alt='logo'
-          />
-        </Link>
+        <div className='flex justify-center items-center'>
+          <Link
+            href={"/"}
+            className='mb-5 cursor-pointer flex items-center gap-2'
+          >
+            <Image
+              src='/images/logo.png'
+              width={100}
+              height={100}
+              alt='logo'
+            />
+          </Link>
+        </div>
 
         {sidebarLinks.map((item) => {
           const isActive = pathname === item.route || pathname?.startsWith(`${item.route}/`);

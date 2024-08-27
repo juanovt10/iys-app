@@ -9,11 +9,11 @@ export const saveClientData = async (data: Client): Promise<Client | null> => {
   try {
     let returnedData, error;
 
-    if (data.nombre_empresa) {
+    if (data.id) {
       ({ data: returnedData, error } = await supabase
         .from('clientes')
         .update(data)
-        .eq('nombre_empresa', data.nombre_empresa));
+        .eq('id', data.id));
     } else {
       ({ data: returnedData, error } = await supabase
         .from('clientes')

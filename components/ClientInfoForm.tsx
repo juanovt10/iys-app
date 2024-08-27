@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import CustomInput from '@/components/CustomInput';
@@ -116,8 +116,7 @@ const ClientInfoForm = ({ nextStep, updateFormData, clientData, registerValidati
               />
             </div>
   
-            <div className="flex-shrink-0 flex justify-between pt-5 border-t mt-5">
-              <div />
+            <div className="flex-shrink-0 flex justify-between pt-5 border-t mt-5 button-container">
               <Button type="submit" variant="default">
                 Continuar
               </Button>

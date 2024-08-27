@@ -39,7 +39,7 @@ export const getDynamicMaxLength = () => {
   const screenWidth = window.innerWidth;
 
   if (screenWidth >= 1536) {
-    return 500; 
+    return 180; 
   } else if (screenWidth >= 1280) {
     return 140; 
   } else if (screenWidth >= 768) {

@@ -45,7 +45,7 @@ const SignIn = () => {
 
 
   return (
-    <div className='flex h-screen items-center justify-center'>
+    <div className='flex min-h-screen items-center justify-center'>
       <Card className="w-[350px]">
         <CardHeader className='flex flex-col items-center justify-center'>
           <Image

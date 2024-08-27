@@ -60,7 +60,9 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
     };
 
     try {
+      console.log('Saving client data...');
       await saveClientData(client);
+      console.log('Client data saved successfully.');
 
       const files = await getAPIFiles(apiData);
 
@@ -72,9 +74,10 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
         remarks: remarks,
       };
 
+      console.log('Saving quote data...');
       await saveQuoteData(quoteData);
+      console.log('Quote data saved successfully.');
       await saveOrUpdateItemData(items);
-      // await updateItemData(items);
 
       setFiles(files);
       setShowSuccessDialog(true);
