@@ -61,6 +61,7 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
 
     try {
       console.log('Saving client data...');
+      console.log('Client data:', client);
       await saveClientData(client);
       console.log('Client data saved successfully.');
 

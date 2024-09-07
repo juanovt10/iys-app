@@ -93,6 +93,7 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     setSelectedItems(updatedItems);
     form.setValue('items', updatedItems);
   };
+  
 
   const onRemoveItem = (index: number) => {
     const updatedItems = selectedItems.filter((_, idx) => idx !== index);

@@ -6,7 +6,6 @@ import { Item } from '@/types';
 import { formatWithCommas } from '@/lib/utils';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import Image from 'next/image';
-import CustomNumberInput from './CustomNumberInput';
 
 interface SelectedItemCardProps {
   item: Item;

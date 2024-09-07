@@ -26,9 +26,14 @@ export const calculateTotals = (items: Item[]) => {
 };
 
 export const formatWithCommas = (number: number): string => {
-  const roundedNumber = Math.round(number); // Round the number to the nearest whole number
+  const roundedNumber = Math.round(number);
   return roundedNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
+
+export const formatWithCommasAndDecimals = (number: number): string => {
+  return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
 
 export const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) return text;
