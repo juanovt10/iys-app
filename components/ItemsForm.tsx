@@ -75,18 +75,28 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     form.setValue('items', newItems);
   };
 
-  const onUpdateItem = (index: number, field: keyof Item, value: string) => {
-    const sanitizedValue = value.replace(/[^0-9,]/g, '');
-    const numberValue = Number(sanitizedValue.replace(/,/g, ''));
-    if (isNaN(numberValue)) return;
+  // const onUpdateItem = (index: number, field: keyof Item, value: string) => {
+  //   const sanitizedValue = value.replace(/[^0-9,]/g, '');
+  //   const numberValue = Number(sanitizedValue.replace(/,/g, ''));
+  //   if (isNaN(numberValue)) return;
   
+  //   const updatedItems = selectedItems.map((item, idx) =>
+  //     idx === index ? { ...item, [field]: numberValue } : item
+  //   );
+  
+  //   setSelectedItems(updatedItems);
+  //   form.setValue('items', updatedItems);
+  // };
+
+  const onUpdateItem = (index: number, field: keyof Item, value: number) => {
     const updatedItems = selectedItems.map((item, idx) =>
-      idx === index ? { ...item, [field]: numberValue } : item
+      idx === index ? { ...item, [field]: value } : item
     );
   
     setSelectedItems(updatedItems);
     form.setValue('items', updatedItems);
   };
+
 
   const onRemoveItem = (index: number) => {
     const updatedItems = selectedItems.filter((_, idx) => idx !== index);

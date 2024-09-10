@@ -6,12 +6,13 @@ import { Item } from '@/types';
 import { formatWithCommas, formatWithCommasAndDecimals } from '@/lib/utils';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import Image from 'next/image';
+import { NumericFormat } from 'react-number-format';
 
 interface SelectedItemCardProps {
   item: Item;
   index: number;
   selectedItemsCount: number;
-  onUpdateItem: (index: number, field: keyof Item, value: string) => void;
+  onUpdateItem: (index: number, field: keyof Item, value: number) => void;
   onRemoveItem: (index: number) => void;
 }
 
@@ -22,6 +23,7 @@ const SelectedItemCard: React.FC<SelectedItemCardProps> = ({
   onUpdateItem,
   onRemoveItem
 }) => {
+
 
 
   return (
@@ -60,13 +62,15 @@ const SelectedItemCard: React.FC<SelectedItemCardProps> = ({
             {item.unidad}
           </FormLabel>
           <div className="flex items-center space-x-2">
-            <Input
+            <NumericFormat
               id={`item-${index}-cantidad`}
-              type="text"
-              placeholder="Quantity"
-              value={formatWithCommas(item.cantidad)}
-              onChange={(e) => onUpdateItem(index, 'cantidad', e.target.value)}
-              className="w-full text-center"
+              thousandSeparator
+              decimalScale={2}
+              fixedDecimalScale
+              allowNegative={false}
+              value={item.cantidad}
+              className="w-full text-center p-2 border rounded"
+              onValueChange={(values) => onUpdateItem(index, 'cantidad', values.floatValue ?? 0)}
             />
           </div>
         </div>
@@ -75,13 +79,14 @@ const SelectedItemCard: React.FC<SelectedItemCardProps> = ({
             Precio/{item.unidad}
           </FormLabel>
           <div className="flex items-center space-x-2">
-            <Input
+            <NumericFormat
               id={`item-${index}-precio_unidad`}
-              type="text"
-              placeholder="Price"
-              value={formatWithCommas(item.precio_unidad)}
-              onChange={(e) => onUpdateItem(index, 'precio_unidad', e.target.value)}
-              className="w-full text-center"
+              thousandSeparator
+              fixedDecimalScale
+              allowNegative={false}
+              value={item.precio_unidad}
+              className="w-full text-center p-2 border rounded"
+              onValueChange={(values) => onUpdateItem(index, 'precio_unidad', values.floatValue ?? 0)}
             />
           </div>
         </div>

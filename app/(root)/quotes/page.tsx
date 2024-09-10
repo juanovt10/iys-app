@@ -13,7 +13,7 @@ const Quotes = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [search, setSearch] = useState<string>('');
 
-  const supabase = createClient()
+  const supabase = createClient();
 
   const debounceSearch = useDebounce(search, 500);
 
@@ -44,7 +44,7 @@ const Quotes = () => {
 
   useEffect(() => {
     fetchLatestQuotes(debounceSearch);
-  }, [debounceSearch, fetchLatestQuotes])
+  }, [debounceSearch, fetchLatestQuotes]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
