@@ -11,6 +11,7 @@ import { downloadFile } from '@/lib/supabase/apiService';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+
 const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true); 
@@ -57,10 +58,6 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   };
   
   
-  
-    const handleEditQuote = () => {
-      router.push(`/quotes/edit/${id}`);
-    };
 
   const quoteData = {
     client: client,
@@ -70,7 +67,7 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   
   return (
     <div className="p-4 mx-auto bg-white shadow-md rounded-lg">
-      <h1 className="text-2xl font-extrabold mb-5">Detalle de Cotización #{id}</h1>
+      <h1 className="text-2xl font-extrabold mb-5">Detalle de Cotización #{quote.numero} - Rev{quote.revision}</h1>
       <QuoteSummary
         quoteData={quoteData}
       />

@@ -16,7 +16,7 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
   const [latestQuoteId, setLatestQuoteId] = useState<number | null>(null);
   const router = useRouter();
 
-  const { client, items, remarks } = formData;
+  const { client, items, remarks, numero, revision } = formData;
 
   const supabase = createClient();
 
@@ -24,8 +24,8 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
     try {
       const { data, error } = await supabase
         .from('cotizaciones')
-        .select('id')
-        .order('created_at', { ascending: false })
+        .select('numero')
+        .order('numero', { ascending: false })
         .limit(1);
 
       if (error) {
@@ -34,9 +34,10 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
       }
 
       if (data && data.length > 0) {
-        setLatestQuoteId(data[0].id);
+        const nextQuoteId = data[0].numero + 1;
+        setLatestQuoteId(nextQuoteId);
       } else {
-        console.warn('No data returned from Supabase.');
+        setLatestQuoteId(100);
       }
     } catch (err) {
       console.error('An error occurred while fetching the latest quote ID:', err);
@@ -50,10 +51,10 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
   const handleSubmit = async () => {
     setIsLoading(true);
 
-    const nextQuoteId = latestQuoteId !== null ? latestQuoteId + 1 : 1;
+    const revisionIncrement = formData.revision && formData.revision + 1;
 
     const apiData = {
-      quoteId: nextQuoteId,
+      quoteId: formData.numero ? formData.numero : latestQuoteId,
       clientInfo: client,
       items: items,
       remarks: remarks,
@@ -67,12 +68,16 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
 
       const files = await getAPIFiles(apiData);
 
+      console.log('quote id', latestQuoteId);
+
       const quoteData = {
+        numero: numero ? numero : latestQuoteId,
         cliente: client.nombre_empresa,
         items: items,
         excel_file: files.excelUrl,
         pdf_file: files.pdfUrl,
         remarks: remarks,
+        revision: revision ? revisionIncrement : 1
       };
 
       console.log('Saving quote data...');
@@ -92,8 +97,8 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
   };
 
   const handleDownload = async (url: string) => {
-    await downloadFile(url); // Ensure downloadFile is awaited
-    router.push('/quotes'); // Redirect after the download
+    await downloadFile(url);
+    router.push('/quotes');
   };
 
   const handleClose = () => {

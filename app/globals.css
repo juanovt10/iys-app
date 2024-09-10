@@ -102,6 +102,6 @@
   }
 
   .sidebar-label {
-    @apply text-16 font-semibold max-xl:hidden text-black;
+    @apply text-16 font-semibold text-black;
   }
 }

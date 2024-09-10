@@ -44,6 +44,7 @@ const AddItemForm = ({ onAddItem }: { onAddItem: (item: any) => void }) => {
   });
 
 
+
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
     form.setValue('categoria', category);

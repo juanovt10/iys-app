@@ -10,7 +10,7 @@ interface QuoteCardProps {
 }
 
 const QuoteCard = ({ quote }: QuoteCardProps) => {
-  const { subtotal, aiu20, iva, total } = calculateTotals(quote.items);
+  const { total } = calculateTotals(quote.items);
 
   return (
     <div key={quote.id} className="p-4 border border-gray-200 rounded shadow hover:shadow-lg hover:border-red-600">
@@ -18,7 +18,7 @@ const QuoteCard = ({ quote }: QuoteCardProps) => {
         <div className="block  transition-shadow">
           <div className="flex justify-between">
             <div>
-              <p className="text-lg font-semibold">Cotizacion #{quote.id}</p>
+              <p className="text-lg font-semibold">Cotizacion #{quote.numero} - Rev{quote.revision}</p>
               {quote.cliente.length > 0 && (
                 <p className="text-sm text-gray-600">Cliente: {quote.cliente}</p>
               )}

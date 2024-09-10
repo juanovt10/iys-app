@@ -11,7 +11,7 @@ import { Form } from "@/components/ui/form";
 import { createClient } from '@/lib/supabase/client';
 import SearchDropdown from './SearchDropdown';
 
-const ClientInfoForm = ({ nextStep, updateFormData, clientData, registerValidation }: any) => {
+const ClientInfoForm = ({ nextStep, updateFormData, clientData }: any) => {
   const [clients, setClients] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 

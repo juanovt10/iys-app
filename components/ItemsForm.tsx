@@ -2,16 +2,10 @@ import React, { useState, useEffect, ChangeEvent, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from 'zod';
-import { Check, ChevronsUpDown } from "lucide-react";
-
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Form, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createClient } from '@/lib/supabase/client';
 import { Item } from '@/types';
-import { cn, formatWithCommas } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { ToastAction } from './ui/toast';
 import SearchDropdown from './SearchDropdown';
@@ -93,7 +87,6 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     setSelectedItems(updatedItems);
     form.setValue('items', updatedItems);
   };
-  
 
   const onRemoveItem = (index: number) => {
     const updatedItems = selectedItems.filter((_, idx) => idx !== index);

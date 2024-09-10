@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormLabel } from '@/components/ui/form';
 import { Item } from '@/types';
-import { formatWithCommas } from '@/lib/utils';
+import { formatWithCommas, formatWithCommasAndDecimals } from '@/lib/utils';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import Image from 'next/image';
 

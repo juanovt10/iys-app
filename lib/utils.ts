@@ -89,10 +89,14 @@ export const remarksSchema = z.object({
 })
 
 export const itemSchema = z.object({
-  descripcion: z.string().min(5, 'Descripcion es requerida').max(200),
+  descripcion: z.string().min(5, 'Descripcion es requerida').max(1000),
   unidad: z.string().min(1, 'Unidad es requerida'),
   precio_unidad: z.number().min(1, 'Precio por unidad es requerido'),
   cantidad: z.number().min(1, 'Cantidad es requerida'),
   categoria: z.string().min(1, 'Escoja una categoria para el item'),
+});
+
+export const quoteFormSchema = z.object({
+  numero: z.number().min(1, 'Cantidad es requerida'),
 });
 

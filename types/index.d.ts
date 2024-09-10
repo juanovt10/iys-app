@@ -1,5 +1,6 @@
 export interface Quote {
   id?: number;
+  numero?: number;
   items: Item[];
   created_at?: Date;
   cliente: string;
@@ -14,6 +15,7 @@ export interface Quote {
     cambios: string;
     AIU: string;
   }>
+  revision: number;
 }
 
 export interface Item {

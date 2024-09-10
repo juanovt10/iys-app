@@ -20,6 +20,8 @@ const QuoteForm = ({ client, quote }: { client: any, quote: any }) => {
     client: client ? client : {},
     items: quote ? quote.items : [],
     remarks: quote ? quote.remarks : {},
+    numero: quote && quote.numero,
+    revision: quote && quote.revision,
   });
 
 
