@@ -29,7 +29,7 @@ import CustomNumberInput from './CustomNumberInput';
 
 const AddItemForm = ({ onAddItem }: { onAddItem: (item: any) => void }) => {
   const [selectedCategory, setSelectedCategory] = useState('');
-  const categories = ['Vertical', 'Horizontal', 'Dispositivos'];
+  const categories = ['Vertical', 'Horizontal', 'Dispositivos', 'Defensa Vial'];
 
   
   const form = useForm<z.infer<typeof itemSchema>>({
