@@ -5,17 +5,57 @@ import { createClient } from '@/lib/supabase/client'
 const supabase = createClient();
 
 // save the client data
+// export const saveClientData = async (data: Client): Promise<Client | null> => {
+//   try {
+//     let returnedData, error;
+
+//     if (data.nombre_empresa) {
+//       console.log('updating client data...');
+//       ({ data: returnedData, error } = await supabase
+//         .from('clientes')
+//         .update(data)
+//         .eq('nombre_empresa', data.nombre_empresa));
+//     } else {
+//       ({ data: returnedData, error } = await supabase
+//         .from('clientes')
+//         .insert([data]));
+//     }
+
+//     if (error) {
+//       throw error;
+//     }
+//     return returnedData ? returnedData[0] : null;
+//   } catch (error) {
+//     console.error(error);
+//     throw error;
+//   }
+// };
+
 export const saveClientData = async (data: Client): Promise<Client | null> => {
   try {
     let returnedData, error;
 
-    if (data.nombre_empresa) {
-      console.log('updating client data...');
+    // First, check if the client exists based on "nombre_empresa"
+    const { data: existingClient, error: selectError } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('nombre_empresa', data.nombre_empresa)
+      .single(); // Fetch a single client record if it exists
+
+    if (selectError && selectError.code !== 'PGRST116') { // Error code for "no rows returned"
+      throw selectError;
+    }
+
+    if (existingClient) {
+      // If client exists, perform an update
+      console.log('Updating existing client...');
       ({ data: returnedData, error } = await supabase
         .from('clientes')
         .update(data)
         .eq('nombre_empresa', data.nombre_empresa));
     } else {
+      // If client does not exist, insert a new record
+      console.log('Inserting new client...');
       ({ data: returnedData, error } = await supabase
         .from('clientes')
         .insert([data]));
@@ -26,10 +66,11 @@ export const saveClientData = async (data: Client): Promise<Client | null> => {
     }
     return returnedData ? returnedData[0] : null;
   } catch (error) {
-    console.error(error);
+    console.error('Failed to save client data:', error);
     throw error;
   }
 };
+
 
 
 export const updateItemData = async (items: Item[]): Promise<void> => {
