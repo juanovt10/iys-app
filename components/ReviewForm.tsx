@@ -24,19 +24,29 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
     try {
       const { data, error } = await supabase
         .from('cotizaciones')
-        .select('numero')
-        .order('numero', { ascending: false })
+        .select('numero, created_at')
+        .order('created_at', { ascending: false }) // Order by the latest timestamp
         .limit(1);
-
+  
       if (error) {
         console.error('Error fetching the latest quote ID:', error.message);
         return;
       }
-
+  
+      const currentYear = new Date().getUTCFullYear(); // Get current year in UTC
+  
       if (data && data.length > 0) {
-        const nextQuoteId = data[0].numero + 1;
+        const latestQuote = data[0];
+        const latestQuoteYear = new Date(latestQuote.created_at).getUTCFullYear(); // Parse timestamp and get the year in UTC
+  
+        const nextQuoteId =
+          latestQuoteYear === currentYear
+            ? latestQuote.numero + 1 // Increment if the latest quote is from the current year
+            : 100; // Reset if the latest quote is from a previous year
+  
         setLatestQuoteId(nextQuoteId);
       } else {
+        // Start at 100 if no quotes exist
         setLatestQuoteId(100);
       }
     } catch (err) {
