@@ -16,96 +16,125 @@ const ReviewForm = ({ nextStep, prevStep, formData }: any) => {
   const [latestQuoteId, setLatestQuoteId] = useState<number | null>(null);
   const router = useRouter();
 
-  const { client, items, remarks, numero, revision } = formData;
+  const { client, items, remarks, numero, revision, created_at } = formData;
 
   const supabase = createClient();
-
   const fetchLatestQuoteId = useCallback(async (): Promise<void> => {
     try {
-      const { data, error } = await supabase
+      const currentYear = new Date().getUTCFullYear(); // Get current year in UTC
+  
+      // Fetch all quotes from the current year
+      const { data: allQuotes, error: fetchError } = await supabase
         .from('cotizaciones')
         .select('numero, created_at')
-        .order('created_at', { ascending: false }) // Order by the latest timestamp
-        .limit(1);
+        .gte('created_at', `${currentYear}-01-01T00:00:00.000Z`) // Start of the year
+        .lt('created_at', `${currentYear + 1}-01-01T00:00:00.000Z`); // Start of next year
   
-      if (error) {
-        console.error('Error fetching the latest quote ID:', error.message);
+      if (fetchError) {
+        console.error('Error fetching quotes for the year:', fetchError.message);
         return;
       }
   
-      const currentYear = new Date().getUTCFullYear(); // Get current year in UTC
+      console.log('All quotes from current year:', allQuotes); // Debugging log
   
-      if (data && data.length > 0) {
-        const latestQuote = data[0];
-        const latestQuoteYear = new Date(latestQuote.created_at).getUTCFullYear(); // Parse timestamp and get the year in UTC
+      if (allQuotes && allQuotes.length > 0) {
+        // Find the latest quote (with highest numero)
+        const latestQuote = allQuotes.reduce((prev, current) =>
+          prev.numero > current.numero ? prev : current
+        );
   
-        const nextQuoteId =
-          latestQuoteYear === currentYear
-            ? latestQuote.numero + 1 // Increment if the latest quote is from the current year
-            : 100; // Reset if the latest quote is from a previous year
+        console.log('Latest quote object:', latestQuote); // Debugging log with full details
   
-        setLatestQuoteId(nextQuoteId);
+        // Increment the latest quote number
+        setLatestQuoteId(latestQuote.numero + 1);
       } else {
-        // Start at 100 if no quotes exist
+        console.log('No quotes exist for this year, starting at 100');
         setLatestQuoteId(100);
       }
     } catch (err) {
       console.error('An error occurred while fetching the latest quote ID:', err);
     }
   }, [supabase]);
-
+  
+  
   useEffect(() => {
     fetchLatestQuoteId();
   }, [fetchLatestQuoteId]);
 
   const handleSubmit = async () => {
     setIsLoading(true);
-
-    const revisionIncrement = formData.revision && formData.revision + 1;
-
+  
+    console.log("Form Data:", formData);
+  
+    const currentYear = new Date().getUTCFullYear();
+    const quoteYear = created_at ? new Date(created_at).getUTCFullYear() : currentYear;
+  
+    console.log("Latest Quote ID:", latestQuoteId);
+    console.log("Is Revision:", !!revision);
+    console.log("Created Year:", quoteYear);
+    console.log("Existing Numero:", numero);
+  
+    // Determine the correct `quoteId`
+    let finalQuoteId;
+    if (!revision) {
+      finalQuoteId = latestQuoteId; // If no revision, use latestQuoteId
+    } else {
+      finalQuoteId = quoteYear === currentYear ? numero : latestQuoteId; // Keep same number if same year, else assign new
+    }
+  
+    // Increment revision if it exists, else start at 1
+    const finalRevision = revision ? revision + 1 : 1;
+  
+    console.log("Final Quote ID:", finalQuoteId);
+    console.log("Final Revision:", finalRevision);
+  
+    if (!finalQuoteId) {
+      console.error("🚨 Error: finalQuoteId is null, aborting submission.");
+      setIsLoading(false);
+      return;
+    }
+  
     const apiData = {
-      quoteId: formData.numero ? formData.numero : latestQuoteId,
+      quoteId: finalQuoteId,
       clientInfo: client,
       items: items,
       remarks: remarks,
     };
-
+  
     try {
-      console.log('Saving client data...');
-      console.log('Client data:', client);
+      console.log("Saving client data...");
       await saveClientData(client);
-      console.log('Client data saved successfully.');
-
+      console.log("Client data saved successfully.");
+  
       const files = await getAPIFiles(apiData);
-
-      console.log('quote id', latestQuoteId);
-
+  
+      console.log("Quote ID:", finalQuoteId);
+  
       const quoteData = {
-        numero: numero ? numero : latestQuoteId,
+        numero: finalQuoteId,
         cliente: client.nombre_empresa,
         items: items,
         excel_file: files.excelUrl,
         pdf_file: files.pdfUrl,
         remarks: remarks,
-        revision: revision ? revisionIncrement : 1
+        revision: finalRevision, // Ensure correct revision logic
       };
-
-      console.log('Saving quote data...');
+  
+      console.log("Saving quote data...");
       await saveQuoteData(quoteData);
-      console.log('Quote data saved successfully.');
+      console.log("Quote data saved successfully.");
       await saveOrUpdateItemData(items);
-
+  
       setFiles(files);
       setShowSuccessDialog(true);
-
-      // router.push('/quotes');
     } catch (error) {
-      console.log(error);
+      console.error("Error while saving quote data:", error);
     } finally {
       setIsLoading(false);
     }
   };
-
+  
+  
   const handleDownload = async (url: string) => {
     await downloadFile(url);
     router.push('/quotes');

@@ -22,6 +22,7 @@ const QuoteForm = ({ client, quote }: { client: any, quote: any }) => {
     remarks: quote ? quote.remarks : {},
     numero: quote && quote.numero,
     revision: quote && quote.revision,
+    created_at: quote && quote.created_at,
   });
 
 
