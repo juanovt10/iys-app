@@ -19,28 +19,56 @@ const Quotes = () => {
 
   const fetchLatestQuotes = useCallback(async (searchQuery: string = ''): Promise<void> => {
     let query = supabase
-      .from('cotizaciones')
+      .from('latest_cotizaciones')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(5);
-
+      .limit(10);
+  
     if (searchQuery) {
-      query = query.or(`cliente.ilike.%${searchQuery}%`);
+      query = query.ilike('numero', `%${searchQuery}%`);
     }
-
+  
     const { data, error } = await query;
-
+  
     if (error) {
       console.error('Error fetching quotes:', error.message);
       return;
     }
-
+  
     if (data) {
       setQuotes(data as Quote[]);
     } else {
       console.warn('No data returned from Supabase.');
     }
   }, [supabase]);
+  
+  
+  
+  
+  // const fetchLatestQuotes = useCallback(async (searchQuery: string = ''): Promise<void> => {
+  //   let query = supabase
+  //     .from('cotizaciones')
+  //     .select('*')
+  //     .order('created_at', { ascending: false })
+  //     .limit(5);
+
+  //   if (searchQuery) {
+  //     query = query.or(`cliente.ilike.%${searchQuery}%`);
+  //   }
+
+  //   const { data, error } = await query;
+
+  //   if (error) {
+  //     console.error('Error fetching quotes:', error.message);
+  //     return;
+  //   }
+
+  //   if (data) {
+  //     setQuotes(data as Quote[]);
+  //   } else {
+  //     console.warn('No data returned from Supabase.');
+  //   }
+  // }, [supabase]);
 
   useEffect(() => {
     fetchLatestQuotes(debounceSearch);
