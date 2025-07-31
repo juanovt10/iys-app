@@ -12,6 +12,7 @@ import SearchDropdown from './SearchDropdown';
 import SelectedItemCard from './SelectedItemCard';
 import { Dialog } from './ui/dialog';
 import AddItemForm from './AddItemForm';
+import SelectedItemsTable from './SelectedItemsTable';
 
 const FormSchema = z.object({
   items: z.array(z.object({
@@ -74,19 +75,6 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
     setSelectedItems(newItems);
     form.setValue('items', newItems);
   };
-
-  // const onUpdateItem = (index: number, field: keyof Item, value: string) => {
-  //   const sanitizedValue = value.replace(/[^0-9,]/g, '');
-  //   const numberValue = Number(sanitizedValue.replace(/,/g, ''));
-  //   if (isNaN(numberValue)) return;
-  
-  //   const updatedItems = selectedItems.map((item, idx) =>
-  //     idx === index ? { ...item, [field]: numberValue } : item
-  //   );
-  
-  //   setSelectedItems(updatedItems);
-  //   form.setValue('items', updatedItems);
-  // };
 
   const onUpdateItem = (index: number, field: keyof Item, value: number) => {
     const updatedItems = selectedItems.map((item, idx) =>
@@ -172,18 +160,26 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
                 setSearchTerm={setSearchTerm}
                 onSelectItem={onSelectItem}
                 placeholder="Agregar item existente"
-                searchProperty='descripcion'
+                searchProperty="descripcion"
               />
               <FormMessage />
             </FormItem>
-            <Button type='button' className="w-full" onClick={() => setShowAddItemDialog(true)}>
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() => setShowAddItemDialog(true)}
+            >
               Agregar nuevo item
             </Button>
           </div>
 
-
           <div className="flex-grow space-y-4 max-h-96 overflow-y-auto">
-            {selectedItems.map((item, index) => (
+            <SelectedItemsTable
+              selectedItems={selectedItems}
+              onUpdateItem={onUpdateItem}
+              onRemoveItem={onRemoveItem}
+            />
+            {/* {selectedItems.map((item, index) => (
               <SelectedItemCard
                 key={index}
                 item={item}
@@ -192,7 +188,7 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
                 onUpdateItem={onUpdateItem}
                 onRemoveItem={onRemoveItem}
               />
-            ))}
+            ))} */}
           </div>
 
           <div className="flex-shrink-0 flex justify-between py-5 border-t">
@@ -203,16 +199,16 @@ const ItemsForm = ({ nextStep, prevStep, updateFormData, itemsData }: any) => {
             >
               Atras
             </Button>
-            <Button type="button" onClick={handleSubmitClick}>Continuar</Button>
+            <Button type="button" onClick={handleSubmitClick}>
+              Continuar
+            </Button>
           </div>
         </form>
       </Form>
 
       <Dialog open={showAddItemDialog} onOpenChange={setShowAddItemDialog}>
-        <AddItemForm onAddItem={onAddNewItem}/>
+        <AddItemForm onAddItem={onAddNewItem} />
       </Dialog>
-
-
     </div>
   );
 };
