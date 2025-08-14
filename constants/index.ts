@@ -10,6 +10,11 @@ export const sidebarLinks = [
     label: "Cotizaciones",
   },
   {
+    imgURL: "/icons/inventory.svg",
+    route: "/projects",
+    label: "Proyectos",
+  },
+  {
     imgURL: "/icons/design.svg",
     route: "/designs",
     label: "Diseños",
