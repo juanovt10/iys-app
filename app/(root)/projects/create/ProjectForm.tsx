@@ -7,16 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import QuoteItemsPreview from "./QuoteItemsPreview";
+import { ProjectQuote } from "@/types";
 
-type Quote = {
-  id: string|number; numero: number; revision: number; clientName: string; itemsCount: number;
-};
 
 export default function ProjectForm({
   projectName, onNameChange, selectedQuote, canSubmit, creating, onCreate,
 }: {
   projectName: string; onNameChange: (v: string) => void;
-  selectedQuote: Quote | null; canSubmit: boolean; creating: boolean;
+  selectedQuote: ProjectQuote | null; canSubmit: boolean; creating: boolean;
   onCreate: () => void;
 }) {
   return (

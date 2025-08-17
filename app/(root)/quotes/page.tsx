@@ -1,48 +1,80 @@
-'use client'
+"use client";
 
-import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from "@/components/ui/input"
-import { createClient } from '@/lib/supabase/client'
-import { Quote } from '@/types/index'
-import QuoteCard from '@/components/QuoteCard'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { createClient } from "@/lib/supabase/client";
+import { Quote } from "@/types/index";
+import QuoteCard from "@/components/QuoteCard";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const Quotes = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [search, setSearch] = useState<string>('');
+  const [search, setSearch] = useState<string>("");
 
   const supabase = createClient();
 
   const debounceSearch = useDebounce(search, 500);
 
-  const fetchLatestQuotes = useCallback(async (searchQuery: string = ''): Promise<void> => {
-    let query = supabase
-      .from('latest_cotizaciones')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(10);
-  
-    if (searchQuery) {
-      query = query.ilike('numero', `%${searchQuery}%`);
-    }
-  
-    const { data, error } = await query;
-  
-    if (error) {
-      console.error('Error fetching quotes:', error.message);
-      return;
-    }
-  
-    if (data) {
-      setQuotes(data as Quote[]);
-    } else {
-      console.warn('No data returned from Supabase.');
-    }
-  }, [supabase]);
-  
-  
+  // const fetchLatestQuotes = useCallback(async (searchQuery: string = ''): Promise<void> => {
+  //   let query = supabase
+  //     .from('latest_cotizaciones')
+  //     .select('*')
+  //     .order('created_at', { ascending: false })
+  //     .limit(10);
+
+  //   if (searchQuery) {
+  //     query = query.ilike('numero', `%${searchQuery}%`);
+  //   }
+
+  //   const { data, error } = await query;
+
+  //   if (error) {
+  //     console.error('Error fetching quotes:', error.message);
+  //     return;
+  //   }
+
+  //   if (data) {
+  //     setQuotes(data as Quote[]);
+  //   } else {
+  //     console.warn('No data returned from Supabase.');
+  //   }
+  // }, [supabase]);
+
+  const fetchLatestQuotes = useCallback(
+    async (searchQuery: string = ""): Promise<void> => {
+      let q = supabase
+        .from("latest_cotizaciones")
+        .select("id, numero, revision, cliente, items, created_at, remarks")
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      const trimmed = searchQuery.trim();
+
+      if (trimmed) {
+        const num = Number(trimmed);
+        if (Number.isFinite(num)) {
+          // Search by exact numero OR by client name (nice UX)
+          q = q.or(`numero.eq.${num},cliente.ilike.%${trimmed}%`);
+        } else {
+          // Text search by client name
+          q = q.ilike("cliente", `%${trimmed}%`);
+        }
+      }
+
+      const { data, error } = await q;
+
+      if (error) {
+        console.error("Error fetching quotes:", error.message);
+        setQuotes([]);
+        return;
+      }
+
+      setQuotes((data ?? []) as Quote[]);
+    },
+    [supabase]
+  );
 
   useEffect(() => {
     fetchLatestQuotes(debounceSearch);
@@ -52,25 +84,22 @@ const Quotes = () => {
     setSearch(e.target.value);
   };
 
-
   return (
-    <div className='flex flex-col gap-4 p-5 w-full'>
-      <h1 className='text-2xl font-extrabold'>Cotizaciones</h1>
-      <div className='flex flex-col gap-4'>
-        <Link href={'/quotes/create'} passHref>
-          <Button
-            className='w-full bg-companyGradient border border-gray-200 rounded-md shadow'
-          >
+    <div className="flex flex-col gap-4 p-5 w-full">
+      <h1 className="text-2xl font-extrabold">Cotizaciones</h1>
+      <div className="flex flex-col gap-4">
+        <Link href={"/quotes/create"} passHref>
+          <Button className="w-full bg-companyGradient border border-gray-200 rounded-md shadow">
             Crear Cotizacion
           </Button>
         </Link>
 
         <Input
           type="text"
-          placeholder="Buscar cotización por nombre del cliente"
+          placeholder="Buscar por cliente o número de cotización"
           value={search}
           onChange={handleSearchChange}
-          className='border border-gray-200 rounded-md shadow'
+          className="border border-gray-200 rounded-md shadow"
         />
 
         <div className="space-y-4 pb-10">
@@ -80,7 +109,7 @@ const Quotes = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Quotes
+export default Quotes;

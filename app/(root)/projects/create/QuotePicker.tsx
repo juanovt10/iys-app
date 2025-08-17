@@ -5,15 +5,12 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Search, CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
-
-type Quote = {
-  id: string|number; numero: number; revision: number; clientName: string; itemsCount: number;
-};
+import { ProjectQuote } from "@/types";
 
 export default function QuotePicker({
   quotes, loading, query, sort, onQueryChange, onSortChange, selectedId, onSelect,
 }: {
-  quotes: Quote[]; loading: boolean;
+  quotes: ProjectQuote[]; loading: boolean;
   query: string; sort: "recent"|"client"|"items_desc";
   onQueryChange: (q: string) => void; onSortChange: (s: "recent"|"client"|"items_desc") => void;
   selectedId: string|number|null; onSelect: (id: string|number) => void;

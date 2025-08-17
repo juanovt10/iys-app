@@ -40,7 +40,7 @@ const QuoteSummary = ({ quoteData }: any) => {
       </div>
 
       <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4">Remarks</h3>
+        <h3 className="text-xl font-semibold mb-4">Observaciones</h3>
         <div className="space-y-2">
           <p><strong>Validez:</strong> {remarks.validez}</p>
           <p><strong>Anticipo:</strong> {remarks.anticipo}</p>

@@ -42,3 +42,51 @@ export interface Client {
   nit: number;
 }
 
+export type ProjectStatus = "active" | "on_hold" | "completed" | "archived";
+
+export type ProjectRow = {
+  id: string;
+  name: string;
+  clientName: string;
+  quoteId: string;
+  activeRevision: number;
+  status: ProjectStatus;
+  deliverablesCount: number; // placeholders for now
+  cutsCount: number;         // placeholders for now
+  deliveredPercent: number;  // placeholders for now
+  updatedAt: string;         // ISO
+};
+
+export type ProjectQuote = {
+  id: string | number;
+  numero: number;
+  revision: number;
+  clientName: string;
+  itemsCount: number;
+};
+
+
+export type ProjectStatus = "active" | "on_hold" | "completed" | "archived";
+
+export type ProjectSummary = {
+  id: string;
+  name: string;
+  status: ProjectStatus;
+  clientName: string;
+  quoteNumero: string;
+  revisionShown: number;
+  itemsCount: number;
+  createdAt: string;
+};
+
+export type ProjectCounts = {
+  deliverables: number;
+  cuts: number;
+  progressPct: number;
+};
+
+export type ActivityItem = {
+  event_type: string;
+  occurred_at: string;
+  detail?: string;
+};
