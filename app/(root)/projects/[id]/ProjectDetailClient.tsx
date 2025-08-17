@@ -1,3 +1,4 @@
+// app/projects/[id]/ProjectDetailClient.tsx
 "use client";
 
 import { useState } from "react";
@@ -6,17 +7,30 @@ import { createClient } from "@/lib/supabase/client";
 import type { ProjectSummary, ProjectCounts, ProjectStatus, ActivityItem } from "@/types";
 import ProjectHeader from "./ProjectHeader";
 import StatGrid from "./StartGrid";
-import ExecutionCard from "./ExecutionCard";
+import ExecutionPanel from "./ExecutionCard";
 import ActivityCard from "./ActivityCard";
 
 export default function ProjectDetailClient({
   project,
   counts,
   activity,
+  exec,
 }: {
   project: ProjectSummary;
   counts: ProjectCounts;
   activity: ActivityItem[];
+  exec: {
+    deliverables: { id: number; no: number; date: string }[];
+    rows: {
+      key: string;
+      descripcion: string;
+      unidad: string | null;
+      contracted: number;
+      executedTotal: number;
+      remaining: number;
+      perDeliverable: Record<number, number>;
+    }[];
+  };
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -25,10 +39,7 @@ export default function ProjectDetailClient({
   async function changeStatus(next: ProjectStatus) {
     try {
       setSaving(true);
-      const { error } = await supabase
-        .from("proyectos")
-        .update({ status: next })
-        .eq("id", project.id);
+      const { error } = await supabase.from("proyectos").update({ status: next }).eq("id", project.id);
       if (error) throw error;
       router.refresh();
     } finally {
@@ -40,17 +51,14 @@ export default function ProjectDetailClient({
     <div className="mx-auto max-w-[1100px] space-y-6 p-4 md:p-6">
       <ProjectHeader project={project} saving={saving} onChangeStatus={changeStatus} />
 
+      {/* Only Deliverables & Cuts now */}
       <StatGrid
-        items={project.itemsCount}
         deliverables={counts.deliverables}
         cuts={counts.cuts}
-        links={{
-          deliverables: `/projects/${project.id}/deliverables`, // future list page
-          cuts: `/projects/${project.id}/cuts`,                 // future list page
-        }}
+        links={{ deliverables: `/projects/${project.id}/deliverables`, cuts: `/projects/${project.id}/cuts` }}
       />
 
-      <ExecutionCard progressPct={counts.progressPct} />
+      <ExecutionPanel progressPct={counts.progressPct} deliverables={exec.deliverables} rows={exec.rows} />
 
       <ActivityCard items={activity} />
     </div>

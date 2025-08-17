@@ -8,8 +8,11 @@ export type DeliverableRow = {
   itemId: number | null;
   descripcion: string;
   unidad: string | null;
-  maxQty: number;   // contracted qty
-  qty: number;      // executed qty (editable)
+  contracted: number;
+  executedSoFar: number;
+  remaining: number;
+  qty: number;
+  error?: string;
 };
 
 export default function DeliverableItemsTable({
@@ -21,6 +24,9 @@ export default function DeliverableItemsTable({
 }) {
   if (!rows.length) return null;
 
+  const fmt = (n: number) =>
+    new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 }).format(n || 0);
+
   return (
     <div className="overflow-x-auto rounded-md border">
       <Table>
@@ -28,41 +34,49 @@ export default function DeliverableItemsTable({
           <TableRow>
             <TableHead className="w-16 text-center">#</TableHead>
             <TableHead>Descripción</TableHead>
-            <TableHead className="w-48 text-center">Ejecutado</TableHead>
+            <TableHead className="w-24 text-center">Unidad</TableHead>
+            <TableHead className="w-28 text-center">Contratado</TableHead>
+            <TableHead className="w-28 text-center">
+              Ejecutado<br/><span className="text-[10px] text-muted-foreground">hasta hoy</span>
+            </TableHead>
+            <TableHead className="w-28 text-center">Restante</TableHead>
+            <TableHead className="w-40 text-center">Ejecutado (nuevo)</TableHead>
           </TableRow>
         </TableHeader>
-
         <TableBody>
           {rows.map((r, index) => {
-            const rowNo = rows.length - index; // like your quote table
-            const invalid = r.qty < 0; // (later you can check > remaining)
+            const rowNo = rows.length - index;
+            const overBy = r.qty - r.remaining;
+            const isOver = overBy > 0;
             return (
-              <TableRow key={`${r.itemId ?? "x"}-${index}`} className={invalid ? "bg-red-50" : ""}>
+              <TableRow key={`${r.itemId ?? "x"}-${index}`} className={isOver ? "bg-red-50" : ""}>
                 <TableCell className="text-center font-medium">{rowNo}</TableCell>
                 <TableCell>
                   <div className="max-w-[800px] whitespace-pre-wrap">{r.descripcion}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    Contratado: {new Intl.NumberFormat().format(r.maxQty)}
-                    {r.unidad ? ` ${r.unidad}` : ""}
-                  </div>
                 </TableCell>
+                <TableCell className="text-center">{r.unidad ?? ""}</TableCell>
+                <TableCell className="text-center tabular-nums">{fmt(r.contracted)}</TableCell>
+                <TableCell className="text-center tabular-nums">{fmt(r.executedSoFar)}</TableCell>
+                <TableCell className="text-center tabular-nums">{fmt(r.remaining)}</TableCell>
                 <TableCell>
                   <div className="relative">
                     <NumericFormat
+                      id={`row-${index}-qty`}
                       thousandSeparator
                       allowNegative={false}
                       decimalScale={3}
                       value={r.qty}
-                      className={`w-full rounded border px-2 py-1 pr-10 text-center ${invalid ? "border-red-300" : ""}`}
+                      className={`w-full rounded border px-2 py-1 text-center tabular-nums ${
+                        isOver ? "border-red-300" : ""
+                      }`}
                       onValueChange={(v) => onQtyChange(index, v.floatValue ?? 0)}
                     />
-                    <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      {r.unidad ?? ""}
-                    </span>
+                    {isOver && (
+                      <div className="mt-1 text-xs text-red-600">
+                        Excede por {fmt(overBy)} {r.unidad ?? ""}. Ajusta la cantidad.
+                      </div>
+                    )}
                   </div>
-                  {invalid && (
-                    <div className="mt-1 text-xs text-red-600">Cantidad inválida.</div>
-                  )}
                 </TableCell>
               </TableRow>
             );

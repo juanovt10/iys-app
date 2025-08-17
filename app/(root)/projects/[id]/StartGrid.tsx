@@ -25,26 +25,29 @@ function StatCard({
   return href ? <Link href={href}>{body}</Link> : body;
 }
 
+// app/projects/[id]/_components/StatGrid.tsx
 export default function StatGrid({
   items,
   deliverables,
   cuts,
   links,
 }: {
-  items: number;
+  items?: number;                     // ← optional now
   deliverables: number;
   cuts: number;
   links?: { deliverables?: string; cuts?: string };
 }) {
+  const cards = [
+    ...(typeof items === "number" ? [{ label: "Items", value: items }] : []),
+    { label: "Deliverables", value: deliverables, href: links?.deliverables },
+    { label: "Cuts", value: cuts, href: links?.cuts },
+  ];
+  const cols = cards.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2";
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <StatCard label="Items" value={items} />
-      <StatCard
-        label="Deliverables"
-        value={deliverables}
-        href={links?.deliverables}
-      />
-      <StatCard label="Cuts" value={cuts} href={links?.cuts} />
+    <div className={`grid gap-4 sm:grid-cols-2 ${cols}`}>
+      {cards.map((c, i) => (
+        <StatCard key={i} label={c.label} value={c.value} href={c.href} />
+      ))}
     </div>
   );
 }
