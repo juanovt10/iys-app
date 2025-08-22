@@ -167,10 +167,10 @@ export default function DeliverableCreateClient({
   return (
     <div className="mx-auto max-w-[1000px] space-y-6 p-4 md:p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Nuevo Entregable</h1>
+        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Nueva Acta de Entrega</h1>
         <p className="text-sm text-muted-foreground">
           Proyecto: <span className="font-medium">{project.name}</span> · Cliente:{" "}
-          <span className="font-medium">{project.clientName}</span> · Cotización {project.quoteNumero} rev {project.revision}
+          <span className="font-medium">{project.clientName}</span> · Cotización {project.quoteNumero} rev{project.revision}
         </p>
       </div>
 

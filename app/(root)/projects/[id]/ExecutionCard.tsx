@@ -30,7 +30,7 @@ export default function ExecutionPanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Execution</CardTitle>
+        <CardTitle className="text-base">Ejecución</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         {/* Overall progress */}

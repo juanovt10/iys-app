@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient as createServerSupabase } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import DeliverablesListClient from "./DeliverablesListClient";
+import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -117,19 +118,27 @@ export default async function DeliverablesPage({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
-            Deliverables
+            Actas de Entrega
           </h1>
           <p className="text-sm text-muted-foreground">
-            Project: <span className="font-medium">{proj.name}</span> · Client:{" "}
-            <span className="font-medium">{proj.project_client}</span> · Quote{" "}
-            {proj.quote_numero} rev {proj.latest_revision}
+            Proyecto: <span className="font-medium">{proj.name}</span> · Cliente:{" "}
+            <span className="font-medium">{proj.project_client}</span> · Cotizacion{" "}
+            {proj.quote_numero} rev{proj.latest_revision}
           </p>
         </div>
-        <Button asChild>
-          <Link href={`/projects/${params.id}/deliverables/new`}>
-            New Deliverable
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" className="gap-1">
+            <Link href={`/projects/${params.id}`}>
+              <ArrowLeft className="h-4 w-4" />
+              Atrás
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href={`/projects/${params.id}/deliverables/new`}>
+              Nueva Acta de Entrega
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <DeliverablesListClient projectId={String(proj.id)} rows={rows} />

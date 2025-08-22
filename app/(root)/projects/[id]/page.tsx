@@ -13,29 +13,24 @@ type QuoteItem = {
   cantidad?: number;
 };
 
-export default async function ProjectPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function ProjectPage({ params }: { params: { id: string } }) {
   const supabase = createServerSupabase();
 
-  // Handle bigint vs uuid ids
   const isNumeric = /^\d+$/.test(params.id);
   const projectIdFilter: number | string = isNumeric ? Number(params.id) : params.id;
 
-  // 1) Project summary (from your view)
+  // Pull counts directly here too
   const { data: proj, error: projErr } = await supabase
     .from("v_projects_dashboard")
     .select(
-      "id,name,status,created_at,quote_numero,project_revision,latest_revision,latest_cotizacion_id,project_client"
+      "id,name,status,created_at,quote_numero,project_revision,latest_revision,latest_cotizacion_id,project_client,deliverables_count,cuts_count"
     )
     .eq("id", projectIdFilter)
     .maybeSingle();
 
   if (projErr || !proj) return notFound();
 
-  // 2) Load latest-quote items = contracted scope
+  // Latest quote items (contracted scope)
   const { data: latestQuote } = await supabase
     .from("cotizaciones")
     .select("items")
@@ -49,26 +44,20 @@ export default async function ProjectPage({
     ? safeJson<QuoteItem[]>(rawItems, [])
     : [];
 
-  // Normalize scope with a stable key
   const scope = (items ?? []).map((it) => {
     const descripcion = String(it?.descripcion ?? "").trim();
     const unidad = (it?.unidad ?? null) as string | null;
     const contracted = Number(it?.cantidad ?? 0) || 0;
-    const key =
-      it?.id != null ? `i:${it.id}` : `d:${descripcion.toLowerCase()}`;
+    const key = it?.id != null ? `i:${it.id}` : `d:${descripcion.toLowerCase()}`;
     return { key, descripcion, unidad, contracted };
   });
 
-  // 3) Deliverable headers (for table columns & count)
-  const { data: dheads, error: dErr } = await supabase
+  // Deliverables meta (still used for the execution table columns)
+  const { data: dheads } = await supabase
     .from("deliverables")
     .select("id, deliverable_no, created_at")
     .eq("project_id", projectIdFilter)
     .order("deliverable_no", { ascending: true });
-
-  if (dErr) {
-    // Not fatal; continue with empty.
-  }
 
   const deliverablesMeta =
     (dheads ?? []).map((d: any) => ({
@@ -77,9 +66,7 @@ export default async function ProjectPage({
       date: d.created_at as string,
     })) ?? [];
 
-  const deliverablesCount = deliverablesMeta.length;
-
-  // 4) Lines for those deliverables → aggregate executed per item & per deliverable
+  // Lines aggregation (same as you had)
   type ExecRow = {
     key: string;
     descripcion: string;
@@ -91,7 +78,6 @@ export default async function ProjectPage({
   };
 
   let execRows: ExecRow[] = [];
-  let executedByKey = new Map<string, number>();
 
   if (deliverablesMeta.length) {
     const ids = deliverablesMeta.map((d) => d.id);
@@ -100,35 +86,18 @@ export default async function ProjectPage({
       .select("deliverable_id,item_id,descripcion,unidad,qty")
       .in("deliverable_id", ids);
 
-    // Quick lookup for scope meta
-    const scopeMap = new Map<
-      string,
-      { descripcion: string; unidad: string | null; contracted: number }
-    >();
+    const scopeMap = new Map<string, { descripcion: string; unidad: string | null; contracted: number }>();
     for (const it of scope) {
-      scopeMap.set(it.key, {
-        descripcion: it.descripcion,
-        unidad: it.unidad,
-        contracted: it.contracted,
-      });
+      scopeMap.set(it.key, { descripcion: it.descripcion, unidad: it.unidad, contracted: it.contracted });
     }
 
-    // Aggregate
     const rowMap = new Map<
       string,
-      {
-        descripcion: string;
-        unidad: string | null;
-        contracted: number;
-        executedTotal: number;
-        perDeliverable: Record<number, number>;
-      }
+      { descripcion: string; unidad: string | null; contracted: number; executedTotal: number; perDeliverable: Record<number, number> }
     >();
 
     const keyOf = (l: any) =>
-      l.item_id != null
-        ? `i:${l.item_id}`
-        : `d:${String(l.descripcion || "").trim().toLowerCase()}`;
+      l.item_id != null ? `i:${l.item_id}` : `d:${String(l.descripcion || "").trim().toLowerCase()}`;
 
     for (const l of lines ?? []) {
       const key = keyOf(l);
@@ -139,24 +108,14 @@ export default async function ProjectPage({
       };
 
       if (!rowMap.has(key)) {
-        rowMap.set(key, {
-          descripcion: base.descripcion,
-          unidad: base.unidad,
-          contracted: base.contracted,
-          executedTotal: 0,
-          perDeliverable: {},
-        });
+        rowMap.set(key, { descripcion: base.descripcion, unidad: base.unidad, contracted: base.contracted, executedTotal: 0, perDeliverable: {} });
       }
       const row = rowMap.get(key)!;
       const add = Number(l.qty || 0);
       row.executedTotal += add;
-      row.perDeliverable[l.deliverable_id] =
-        (row.perDeliverable[l.deliverable_id] || 0) + add;
-
-      executedByKey.set(key, (executedByKey.get(key) || 0) + add);
+      row.perDeliverable[l.deliverable_id] = (row.perDeliverable[l.deliverable_id] || 0) + add;
     }
 
-    // Finalize rows in the same order as latest quote items
     execRows = scope.map((it) => {
       const r = rowMap.get(it.key) || {
         descripcion: it.descripcion,
@@ -166,18 +125,9 @@ export default async function ProjectPage({
         perDeliverable: {} as Record<number, number>,
       };
       const remaining = Math.max(0, (r.contracted || 0) - (r.executedTotal || 0));
-      return {
-        key: it.key,
-        descripcion: r.descripcion,
-        unidad: r.unidad,
-        contracted: r.contracted,
-        executedTotal: r.executedTotal,
-        remaining,
-        perDeliverable: r.perDeliverable,
-      };
+      return { key: it.key, descripcion: r.descripcion, unidad: r.unidad, contracted: r.contracted, executedTotal: r.executedTotal, remaining, perDeliverable: r.perDeliverable };
     });
   } else {
-    // No deliverables yet → zeroed table using scope order
     execRows = scope.map((it) => ({
       key: it.key,
       descripcion: it.descripcion,
@@ -189,7 +139,7 @@ export default async function ProjectPage({
     }));
   }
 
-  // 5) Overall progress% (cap each item at contracted)
+  // Overall progress (cap per item)
   let sumC = 0;
   let sumE = 0;
   for (const r of execRows) {
@@ -198,7 +148,6 @@ export default async function ProjectPage({
   }
   const progressPct = sumC > 0 ? Math.round((sumE / sumC) * 100) : 0;
 
-  // 6) Render client UI
   return (
     <ProjectDetailClient
       project={{
@@ -211,7 +160,11 @@ export default async function ProjectPage({
         itemsCount: scope.length,
         createdAt: proj.created_at,
       }}
-      counts={{ deliverables: deliverablesCount, cuts: 0, progressPct }}
+      counts={{
+        deliverables: Number(proj.deliverables_count ?? deliverablesMeta.length), // ✅ from view, fallback local
+        cuts: Number(proj.cuts_count ?? 0),                                        // ✅ from view
+        progressPct,
+      }}
       activity={[]}
       exec={{
         deliverables: deliverablesMeta,
@@ -222,10 +175,5 @@ export default async function ProjectPage({
 }
 
 function safeJson<T>(s: string, fallback: T): T {
-  try {
-    const parsed = JSON.parse(s);
-    return parsed as T;
-  } catch {
-    return fallback;
-  }
+  try { return JSON.parse(s) as T; } catch { return fallback; }
 }

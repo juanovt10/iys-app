@@ -39,8 +39,8 @@ export default function StatGrid({
 }) {
   const cards = [
     ...(typeof items === "number" ? [{ label: "Items", value: items }] : []),
-    { label: "Deliverables", value: deliverables, href: links?.deliverables },
-    { label: "Cuts", value: cuts, href: links?.cuts },
+    { label: "Actas de Entrega", value: deliverables, href: links?.deliverables },
+    { label: "Cortes", value: cuts, href: links?.cuts },
   ];
   const cols = cards.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2";
   return (

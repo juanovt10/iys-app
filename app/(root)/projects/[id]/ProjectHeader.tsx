@@ -26,12 +26,12 @@ export default function ProjectHeader({
         </h1>
         <div className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
           <span>
-            Client: <span className="font-medium">{project.clientName}</span>
+            Cliente: <span className="font-medium">{project.clientName}</span>
           </span>
           <span>·</span>
           <span>
-            Quote {project.quoteNumero}{" "}
-            <span className="text-muted-foreground">rev {project.revisionShown}</span>
+            Cotizacion {project.quoteNumero}{" "}
+            <span className="text-muted-foreground">rev{project.revisionShown}</span>
           </span>
         </div>
       </div>
@@ -57,13 +57,13 @@ export default function ProjectHeader({
 
         <Button asChild variant="outline" className="gap-2">
           <Link href={`/projects/${project.id}/deliverables/new`}>
-            <FilePlus2 className="h-4 w-4" /> New Deliverable
+            <FilePlus2 className="h-4 w-4" /> Nueva Acta de Entrega
           </Link>
         </Button>
 
         <Button asChild className="gap-2">
           <Link href={`/projects/${project.id}/cuts/new`}>
-            <Receipt className="h-4 w-4" /> New Cut
+            <Receipt className="h-4 w-4" /> Nuevo Corte
           </Link>
         </Button>
       </div>

@@ -64,25 +64,9 @@ export default function DeliverablesListClient({
               <Input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search deliverables, items…"
+                placeholder="Buscar Acta de Entrega..."
                 className="pl-8"
               />
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={sort === "date_desc" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSort("date_desc")}
-              >
-                Recent
-              </Button>
-              <Button
-                variant={sort === "no_asc" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSort("no_asc")}
-              >
-                No.
-              </Button>
             </div>
           </div>
         </CardContent>
@@ -95,11 +79,9 @@ export default function DeliverablesListClient({
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-20">No.</TableHead>
-                  <TableHead className="w-40">Date</TableHead>
+                  <TableHead className="w-40">Fecha</TableHead>
                   <TableHead className="w-28 text-center"># Items</TableHead>
-                  <TableHead className="w-28 text-center">Total Qty</TableHead>
-                  <TableHead>Preview</TableHead>
-                  <TableHead className="w-40 text-right">Actions</TableHead>
+                  <TableHead className="w-40 text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -112,7 +94,7 @@ export default function DeliverablesListClient({
                 ) : (
                   filtered.map((d) => (
                     <TableRow key={d.id} className="align-top">
-                      <TableCell className="font-medium">D{d.no}</TableCell>
+                      <TableCell className="font-medium">#{d.no}</TableCell>
                       <TableCell>
                         {new Date(d.date).toLocaleString()}
                         {d.createdBy ? (
@@ -120,35 +102,17 @@ export default function DeliverablesListClient({
                         ) : null}
                       </TableCell>
                       <TableCell className="text-center">{d.itemsCount}</TableCell>
-                      <TableCell className="text-center tabular-nums">{fmtNum(d.totalQty)}</TableCell>
-                      <TableCell>
-                        {d.preview.length === 0 ? (
-                          <span className="text-sm text-muted-foreground">No lines</span>
-                        ) : (
-                          <ul className="list-disc pl-5 text-sm">
-                            {d.preview.map((p, i) => (
-                              <li key={i} className="line-clamp-2">
-                                {p.descripcion} — <span className="tabular-nums">{fmtNum(p.qty)}</span>{" "}
-                                <span className="text-muted-foreground">{p.unidad ?? ""}</span>
-                              </li>
-                            ))}
-                            {d.itemsCount > d.preview.length ? (
-                              <li className="text-muted-foreground">…</li>
-                            ) : null}
-                          </ul>
-                        )}
-                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button asChild variant="outline" size="sm" className="gap-1">
                             <Link href={`/projects/${projectId}/deliverables/${d.id}`}>
                               <ExternalLink className="h-4 w-4" />
-                              View
+                              Ver
                             </Link>
                           </Button>
                           <Button size="sm" className="gap-1" disabled>
                             <Download className="h-4 w-4" />
-                            Download
+                            Descargar
                           </Button>
                         </div>
                       </TableCell>

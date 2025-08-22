@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Download } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -45,11 +46,11 @@ export default async function DeliverableDetailPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
-            Deliverable D{header.deliverable_no}
+            Acta de Entrega #{header.deliverable_no}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Project: <span className="font-medium">{proj?.name}</span>{" "}
-            {proj?.project_client ? <>· Client: <span className="font-medium">{proj.project_client}</span></> : null}
+            Proyecto: <span className="font-medium">{proj?.name}</span>{" "}
+            {proj?.project_client ? <>· Cliente: <span className="font-medium">{proj.project_client}</span></> : null}
           </p>
           <div className="text-xs text-muted-foreground">
             {new Date(header.created_at).toLocaleString()}
@@ -57,20 +58,16 @@ export default async function DeliverableDetailPage({
           </div>
         </div>
         <div className="flex gap-2">
-          <Button asChild variant="outline" className="gap-1">
-            <Link href={`/projects/${params.id}/deliverables`}>
-              <ArrowLeft className="h-4 w-4" /> Back
-            </Link>
-          </Button>
+          <BackButton fallbackHref={`/projects/${params.id}`} />
           <Button disabled className="gap-1">
-            <Download className="h-4 w-4" /> Download
+            <Download className="h-4 w-4" /> Descargar
           </Button>
         </div>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Delivered items</CardTitle>
+        <CardHeader className="p-4">
+          <CardTitle className="text-base">Items entregados</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
