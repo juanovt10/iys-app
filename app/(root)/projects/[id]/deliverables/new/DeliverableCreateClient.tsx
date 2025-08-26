@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import DeliverableItemsTable, { DeliverableRow } from "./DeliverableItemsTable";
+import { updateProjectStatusToCompleted } from "@/lib/actions";
 
 type ItemInput = {
   itemId: number | null;
@@ -135,6 +136,7 @@ export default function DeliverableCreateClient({
     try {
       setSaving(true);
       const projectId = /^\d+$/.test(project.id) ? Number(project.id) : project.id;
+      console.log("Creating deliverable for project:", { projectId, projectIdType: typeof projectId, originalId: project.id });
 
       // Get the next deliverable number for this project
       const { data: existingDeliverables } = await supabase
@@ -178,15 +180,33 @@ export default function DeliverableCreateClient({
         if (e2) throw e2;
       }
 
+      // If this is a final deliverable, update project status to completed using server action
+      if (isFinal) {
+        try {
+          console.log("Using server action to update project status to completed for project ID:", projectId);
+          await updateProjectStatusToCompleted(projectId);
+          console.log("Server action completed successfully");
+        } catch (error) {
+          console.error("Server action failed:", error);
+          // Don't throw here, the deliverable was created successfully
+        }
+      }
+
       console.log("Deliverable created successfully:", { deliverableId, isFinal: isFinal });
 
       const deliverableType = isFinal ? "Acta de Entrega Final" : "Acta de Entrega";
       toast({ 
         title: `${deliverableType} creada`, 
-        description: isFinal ? "Las cantidades fueron registradas. No se pueden crear más actas de entrega para este proyecto." : "Las cantidades fueron registradas." 
+        description: isFinal ? "Las cantidades fueron registradas. El proyecto ha sido marcado como completado." : "Las cantidades fueron registradas." 
       });
-      router.push(`/projects/${project.id}`);
-      setTimeout(() => router.refresh(), 0);
+      
+      // Force a hard refresh to ensure the updated status is shown
+      if (isFinal) {
+        window.location.href = `/projects/${project.id}`;
+      } else {
+        router.push(`/projects/${project.id}`);
+        setTimeout(() => router.refresh(), 0);
+      }
     } catch (e: any) {
       toast({
         variant: "destructive",

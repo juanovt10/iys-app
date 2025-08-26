@@ -30,10 +30,10 @@ const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
 
 const statusBadge = (status: ProjectStatus) => {
   const map: Record<ProjectStatus, { label: string; className: string }> = {
-    active: { label: "Active",    className: "bg-emerald-500/15 text-emerald-600" },
-    on_hold:{ label: "On hold",   className: "bg-amber-500/15 text-amber-600" },
-    completed:{label:"Completed", className: "bg-blue-500/15 text-blue-600" },
-    archived:{ label:"Archived",  className: "bg-slate-500/15 text-slate-600" },
+    active: { label: "Activo",    className: "bg-emerald-500/15 text-emerald-600" },
+    on_hold:{ label: "En Pausa",   className: "bg-amber-500/15 text-amber-600" },
+    completed:{label:"Completado", className: "bg-blue-500/15 text-blue-600" },
+    archived:{ label:"Archivado",  className: "bg-slate-500/15 text-slate-600" },
   };
   const { label, className } = map[status];
   return <Badge className={`rounded-full px-2.5 py-1 text-xs ${className}`}>{label}</Badge>;

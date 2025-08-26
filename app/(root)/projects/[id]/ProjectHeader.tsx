@@ -4,19 +4,12 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FilePlus2, Receipt } from "lucide-react";
-import {
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
-} from "@/components/ui/select";
-import type { ProjectStatus, ProjectSummary } from "@/types";
+import type { ProjectSummary } from "@/types";
 
 export default function ProjectHeader({
   project,
-  saving,
-  onChangeStatus,
 }: {
   project: ProjectSummary;
-  saving?: boolean;
-  onChangeStatus: (next: ProjectStatus) => void;
 }) {
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -42,23 +35,9 @@ export default function ProjectHeader({
           {project.status === "on_hold" && "En Pausa"}
           {project.status === "completed" && "Completado"}
           {project.status === "archived" && "Archivado"}
+          {/* Debug: Show actual status value */}
+          {!["active", "on_hold", "completed", "archived"].includes(project.status) && project.status}
         </Badge>
-
-        <Select
-          value={project.status}
-          onValueChange={(v) => onChangeStatus(v as ProjectStatus)}
-          disabled={!!saving}
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="active">Activo</SelectItem>
-            <SelectItem value="on_hold">En Pausa</SelectItem>
-            <SelectItem value="completed">Completado</SelectItem>
-            <SelectItem value="archived">Archivado</SelectItem>
-          </SelectContent>
-        </Select>
 
         {project.hasFinalDeliverable ? (
           <Button variant="outline" className="gap-2" disabled>

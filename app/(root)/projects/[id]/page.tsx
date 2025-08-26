@@ -28,12 +28,32 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   const projectIdFilter: number | string = isNumeric ? Number(params.id) : params.id;
 
   // Pull counts directly here too
-  const { data: proj } = await supabase
+  const { data: proj, error: projError } = await supabase
     .from("v_projects_dashboard")
     .select("id,name,status,created_at,quote_numero,project_revision,latest_revision,latest_cotizacion_id,project_client,deliverables_count,cuts_count")
     .eq("id", projectIdFilter)
     .maybeSingle();
+  
+  if (projError) {
+    console.error("Error fetching project:", projError);
+  }
+  
   if (!proj) return notFound();
+  
+  console.log("Project data from v_projects_dashboard:", proj);
+  
+  // Also check the actual proyectos table to see if status was updated
+  const { data: actualProj, error: actualProjError } = await supabase
+    .from("proyectos")
+    .select("id, name, status")
+    .eq("id", projectIdFilter)
+    .maybeSingle();
+  
+  if (actualProjError) {
+    console.error("Error fetching from proyectos table:", actualProjError);
+  } else {
+    console.log("Project data from proyectos table:", actualProj);
+  }
 
   // Latest quote items (contracted scope)
   const { data: latestQuote } = await supabase
@@ -226,7 +246,16 @@ export default async function ProjectPage({ params }: { params: { id: string } }
 
   const deliverablesCount = Number(proj.deliverables_count ?? deliverablesMeta.length);
   const cutsCount = Number(proj.cuts_count ?? 0);
-  const status = (proj.status as any) ?? "active";
+  
+  // Use status from actual proyectos table if available, otherwise fall back to view
+  const status = (actualProj?.status as any) ?? (proj.status as any) ?? "active";
+  
+  // Debug: Log the status being used
+  console.log("Project status from database:", { 
+    viewStatus: proj.status, 
+    actualStatus: actualProj?.status, 
+    finalStatus: status 
+  });
 
   return (
     <ProjectDetailClient

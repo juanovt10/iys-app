@@ -72,7 +72,14 @@ function StatusFilter({
   value: ProjectStatus[];
   onChange: (v: ProjectStatus[]) => void;
 }) {
-  const all: ProjectStatus[] = ["active", "on_hold", "completed", "archived"];
+  const availableStatuses: ProjectStatus[] = ["active", "completed"];
+  const statusLabels: Record<ProjectStatus, string> = {
+    active: "Activo",
+    on_hold: "En Pausa",
+    completed: "Completado",
+    archived: "Archivado"
+  };
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -81,9 +88,9 @@ function StatusFilter({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
-        <DropdownMenuLabel>Filter by status</DropdownMenuLabel>
+        <DropdownMenuLabel>Filtrar por estado</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {all.map((st) => (
+        {availableStatuses.map((st) => (
           <DropdownMenuCheckboxItem
             key={st}
             checked={value.includes(st)}
@@ -91,7 +98,7 @@ function StatusFilter({
               onChange(v ? [...value, st] : value.filter((p) => p !== st))
             }
           >
-            {st.replace("_", " ")}
+            {statusLabels[st]}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

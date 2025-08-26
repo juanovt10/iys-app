@@ -26,7 +26,7 @@ export default function ProjectsIndexClient({
   onArchiveProject?: (projectId: string) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [statusFilters, setStatusFilters] = useState<ProjectStatus[]>(["active"]);
+  const [statusFilters, setStatusFilters] = useState<ProjectStatus[]>(["active", "completed"]);
   const [sort, setSort] = useState<"updated_desc" | "name_asc" | "progress_desc">("updated_desc");
   const debounced = useDebounced(query);
 
