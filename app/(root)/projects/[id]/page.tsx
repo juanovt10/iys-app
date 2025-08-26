@@ -13,6 +13,14 @@ type QuoteItem = {
   cantidad?: number;
 };
 
+type ActivityItem = {
+  event_type: string;
+  occurred_at: string;
+  actor?: string | null;
+  label: string;
+  href?: string;
+};
+
 export default async function ProjectPage({ params }: { params: { id: string } }) {
   const supabase = createServerSupabase();
 
@@ -20,15 +28,12 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   const projectIdFilter: number | string = isNumeric ? Number(params.id) : params.id;
 
   // Pull counts directly here too
-  const { data: proj, error: projErr } = await supabase
+  const { data: proj } = await supabase
     .from("v_projects_dashboard")
-    .select(
-      "id,name,status,created_at,quote_numero,project_revision,latest_revision,latest_cotizacion_id,project_client,deliverables_count,cuts_count"
-    )
+    .select("id,name,status,created_at,quote_numero,project_revision,latest_revision,latest_cotizacion_id,project_client,deliverables_count,cuts_count")
     .eq("id", projectIdFilter)
     .maybeSingle();
-
-  if (projErr || !proj) return notFound();
+  if (!proj) return notFound();
 
   // Latest quote items (contracted scope)
   const { data: latestQuote } = await supabase
@@ -74,6 +79,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
     contracted: number;
     executedTotal: number;
     remaining: number;
+    extraQty: number;
     perDeliverable: Record<number, number>;
   };
 
@@ -125,7 +131,17 @@ export default async function ProjectPage({ params }: { params: { id: string } }
         perDeliverable: {} as Record<number, number>,
       };
       const remaining = Math.max(0, (r.contracted || 0) - (r.executedTotal || 0));
-      return { key: it.key, descripcion: r.descripcion, unidad: r.unidad, contracted: r.contracted, executedTotal: r.executedTotal, remaining, perDeliverable: r.perDeliverable };
+      const extraQty = Math.max(0, (r.executedTotal || 0) - (r.contracted || 0));
+      return { 
+        key: it.key, 
+        descripcion: r.descripcion, 
+        unidad: r.unidad, 
+        contracted: r.contracted, 
+        executedTotal: r.executedTotal, 
+        remaining, 
+        extraQty,
+        perDeliverable: r.perDeliverable 
+      };
     });
   } else {
     execRows = scope.map((it) => ({
@@ -135,6 +151,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
       contracted: it.contracted,
       executedTotal: 0,
       remaining: it.contracted,
+      extraQty: 0,
       perDeliverable: {},
     }));
   }
@@ -148,28 +165,85 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   }
   const progressPct = sumC > 0 ? Math.round((sumE / sumC) * 100) : 0;
 
+  // 2) Recent activity (last 20)
+  const { data: acts } = await supabase
+    .from("project_activity")
+    .select("event_type, occurred_at, actor_id, meta")
+    .eq("project_id", projectIdFilter)
+    .order("occurred_at", { ascending: false })
+    .limit(20);
+
+  const activity: ActivityItem[] = (acts ?? []).map((a: any) => {
+    const et = String(a.event_type);
+    const meta = (a.meta ?? {}) as any;
+
+    if (et === "deliverable_created") {
+      const isFinal = meta.is_final || false;
+      return {
+        event_type: et,
+        occurred_at: a.occurred_at,
+        actor: a.actor_id ?? null,
+        label: `Acta de entrega ${isFinal ? "Final" : `#${meta.deliverable_no ?? ""}`} creada`,
+        href: meta.deliverable_id ? `/projects/${proj.id}/deliverables/${meta.deliverable_id}` : undefined,
+      };
+    }
+    if (et === "cut_created") {
+      const isFinal = meta.is_final || false;
+      return {
+        event_type: et,
+        occurred_at: a.occurred_at,
+        actor: a.actor_id ?? null,
+        label: `Corte ${isFinal ? "Final" : `#${meta.cut_no ?? ""}`} creado`,
+        href: meta.cut_id ? `/projects/${proj.id}/cuts/${meta.cut_id}` : undefined,
+      };
+    }
+    if (et === "quote_updated") {
+      return {
+        event_type: et,
+        occurred_at: a.occurred_at,
+        actor: a.actor_id ?? null,
+        label: "Cotización actualizada (fuente de verdad)",
+        href: meta.to_cotizacion_id ? `/quotes/${meta.to_cotizacion_id}` : undefined,
+      };
+    }
+    return { event_type: et, occurred_at: a.occurred_at, actor: a.actor_id ?? null, label: et.replace(/_/g, " ") };
+  });
+
+  // Check if project has a final deliverable
+  let hasFinalDeliverable = false;
+  try {
+    const { data: finalCheck } = await supabase
+      .from("deliverables")
+      .select("id")
+      .eq("project_id", projectIdFilter)
+      .eq("is_final", true)
+      .maybeSingle();
+    hasFinalDeliverable = !!finalCheck;
+  } catch (error) {
+    // Column might not exist, default to false
+    hasFinalDeliverable = false;
+  }
+
+  const deliverablesCount = Number(proj.deliverables_count ?? deliverablesMeta.length);
+  const cutsCount = Number(proj.cuts_count ?? 0);
+  const status = (proj.status as any) ?? "active";
+
   return (
     <ProjectDetailClient
       project={{
         id: String(proj.id),
         name: proj.name,
-        status: proj.status,
+        status,
         clientName: proj.project_client,
         quoteNumero: String(proj.quote_numero),
         revisionShown: Number(proj.latest_revision ?? proj.project_revision ?? 0),
         itemsCount: scope.length,
         createdAt: proj.created_at,
+        hasFinalDeliverable,
       }}
-      counts={{
-        deliverables: Number(proj.deliverables_count ?? deliverablesMeta.length), // ✅ from view, fallback local
-        cuts: Number(proj.cuts_count ?? 0),                                        // ✅ from view
-        progressPct,
-      }}
-      activity={[]}
-      exec={{
-        deliverables: deliverablesMeta,
-        rows: execRows,
-      }}
+      counts={{ deliverables: deliverablesCount, cuts: cutsCount, progressPct }}
+      activity={activity}
+      exec={{ deliverables: deliverablesMeta, rows: execRows }}
     />
   );
 }

@@ -37,6 +37,21 @@ export default async function DeliverablesPage({
     .eq("project_id", projectIdFilter)
     .order("deliverable_no", { ascending: true });
 
+  // Check if project has a final deliverable
+  let hasFinalDeliverable = false;
+  try {
+    const { data: finalCheck } = await supabase
+      .from("deliverables")
+      .select("id")
+      .eq("project_id", projectIdFilter)
+      .eq("is_final", true)
+      .maybeSingle();
+    hasFinalDeliverable = !!finalCheck;
+  } catch (error) {
+    // Column might not exist, default to false
+    hasFinalDeliverable = false;
+  }
+
   const ids = (headers ?? []).map((h) => h.id);
   let lines: {
     deliverable_id: number;
@@ -114,7 +129,7 @@ export default async function DeliverablesPage({
   });
 
   return (
-    <div className="mx-auto max-w-[1100px] space-y-6 p-4 md:p-6">
+    <div className="mx-auto max-w-[1200px] space-y-6 p-4 md:p-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
@@ -133,11 +148,17 @@ export default async function DeliverablesPage({
               Atrás
             </Link>
           </Button>
-          <Button asChild>
-            <Link href={`/projects/${params.id}/deliverables/new`}>
-              Nueva Acta de Entrega
-            </Link>
-          </Button>
+          {hasFinalDeliverable ? (
+            <Button disabled>
+              Acta Final Creada
+            </Button>
+          ) : (
+            <Button asChild>
+              <Link href={`/projects/${params.id}/deliverables/new`}>
+                Nueva Acta de Entrega
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 

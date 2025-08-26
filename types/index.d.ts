@@ -55,6 +55,7 @@ export type ProjectRow = {
   cutsCount: number;         // placeholders for now
   deliveredPercent: number;  // placeholders for now
   updatedAt: string;         // ISO
+  hasFinalDeliverable: boolean;
 };
 
 export type ProjectQuote = {
@@ -77,6 +78,7 @@ export type ProjectSummary = {
   revisionShown: number;
   itemsCount: number;
   createdAt: string;
+  hasFinalDeliverable: boolean;
 };
 
 export type ProjectCounts = {
@@ -88,5 +90,7 @@ export type ProjectCounts = {
 export type ActivityItem = {
   event_type: string;
   occurred_at: string;
-  detail?: string;
+  actor?: string | null;
+  label: string;       // ← add this
+  href?: string;       // ← keep if you use links
 };

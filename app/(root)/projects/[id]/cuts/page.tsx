@@ -47,7 +47,7 @@ export default async function CutsPage({ params }: { params: { id: string } }) {
     new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(n || 0);
 
   return (
-    <div className="mx-auto max-w-[1100px] space-y-6 p-4 md:p-6">
+    <div className="mx-auto max-w-[1200px] space-y-6 p-4 md:p-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Cortes</h1>
@@ -94,7 +94,13 @@ export default async function CutsPage({ params }: { params: { id: string } }) {
                   (cuts ?? []).map((c: any) => (
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">#{c.cut_no}</TableCell>
-                      <TableCell>{new Date(c.created_at).toLocaleString()}</TableCell>
+                                              <TableCell>{new Date(c.created_at).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</TableCell>
                       <TableCell className="text-center">
                         {deliverablesCount.get(Number(c.id)) || 0}
                       </TableCell>

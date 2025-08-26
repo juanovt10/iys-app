@@ -1,5 +1,5 @@
 // app/projects/[id]/deliverables/new/page.tsx
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient as createServerSupabase } from "@/lib/supabase/server";
 import DeliverableCreateClient from "./DeliverableCreateClient";
 
@@ -32,6 +32,26 @@ export default async function DeliverableNewPage({
     .maybeSingle();
 
   if (projErr || !proj) return notFound();
+
+  // Check if project already has a final deliverable
+  let hasFinalDeliverable = false;
+  try {
+    const { data: finalCheck } = await supabase
+      .from("deliverables")
+      .select("id")
+      .eq("project_id", projectIdFilter)
+      .eq("is_final", true)
+      .maybeSingle();
+    hasFinalDeliverable = !!finalCheck;
+  } catch (error) {
+    // Column might not exist, default to false
+    hasFinalDeliverable = false;
+  }
+
+  // Redirect if final deliverable already exists
+  if (hasFinalDeliverable) {
+    redirect(`/projects/${params.id}`);
+  }
 
   // 2) Load latest quote items (contracted scope)
   const { data: q } = await supabase

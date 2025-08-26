@@ -48,7 +48,12 @@ export default function CreateProjectClient({
         cotizacion_id: Number(selected.id),
       });
       if (error) throw error;
-      router.push("/projects");
+      
+      // Add a small delay to ensure the database transaction is committed
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Force a hard refresh to ensure we get the latest data
+      window.location.href = "/projects";
     } catch (e: any) {
       console.error("Create project failed:", e?.message || e);
     } finally {

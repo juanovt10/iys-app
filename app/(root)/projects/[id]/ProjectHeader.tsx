@@ -37,7 +37,12 @@ export default function ProjectHeader({
       </div>
 
       <div className="flex items-center gap-2">
-        <Badge className="rounded-full">{project.status.replace("_", " ")}</Badge>
+        <Badge className="rounded-full">
+          {project.status === "active" && "Activo"}
+          {project.status === "on_hold" && "En Pausa"}
+          {project.status === "completed" && "Completado"}
+          {project.status === "archived" && "Archivado"}
+        </Badge>
 
         <Select
           value={project.status}
@@ -48,18 +53,26 @@ export default function ProjectHeader({
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="active">active</SelectItem>
-            <SelectItem value="on_hold">on hold</SelectItem>
-            <SelectItem value="completed">completed</SelectItem>
-            <SelectItem value="archived">archived</SelectItem>
+            <SelectItem value="active">Activo</SelectItem>
+            <SelectItem value="on_hold">En Pausa</SelectItem>
+            <SelectItem value="completed">Completado</SelectItem>
+            <SelectItem value="archived">Archivado</SelectItem>
           </SelectContent>
         </Select>
 
-        <Button asChild variant="outline" className="gap-2">
-          <Link href={`/projects/${project.id}/deliverables/new`}>
-            <FilePlus2 className="h-4 w-4" /> Nueva Acta de Entrega
-          </Link>
-        </Button>
+        {project.hasFinalDeliverable ? (
+          <Button variant="outline" className="gap-2" disabled>
+            <FilePlus2 className="h-4 w-4" /> 
+            Acta Final Creada
+          </Button>
+        ) : (
+          <Button asChild variant="outline" className="gap-2">
+            <Link href={`/projects/${project.id}/deliverables/new`}>
+              <FilePlus2 className="h-4 w-4" /> 
+              Nueva Acta de Entrega
+            </Link>
+          </Button>
+        )}
 
         <Button asChild className="gap-2">
           <Link href={`/projects/${project.id}/cuts/new`}>

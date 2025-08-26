@@ -38,7 +38,13 @@ export default function DeliverablesListClient({
       r = r.filter((x) =>
         [
           String(x.no),
-          new Date(x.date).toLocaleDateString(),
+          new Date(x.date).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
           ...(x.preview?.map((p) => p.descripcion) ?? []),
         ]
           .join(" ")
@@ -96,7 +102,13 @@ export default function DeliverablesListClient({
                     <TableRow key={d.id} className="align-top">
                       <TableCell className="font-medium">#{d.no}</TableCell>
                       <TableCell>
-                        {new Date(d.date).toLocaleString()}
+                        {new Date(d.date).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                         {d.createdBy ? (
                           <div className="text-xs text-muted-foreground">by {d.createdBy}</div>
                         ) : null}

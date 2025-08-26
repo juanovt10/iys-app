@@ -13,6 +13,8 @@ type ExecRow = {
   contracted: number;
   executedTotal: number;
   remaining: number;
+  extraQty: number;
+  perDeliverable: Record<number, number>;
 };
 
 export default function ExecutionPanel({
@@ -26,6 +28,9 @@ export default function ExecutionPanel({
 }) {
   const fmt = (n: number | undefined | null) =>
     new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 }).format(n || 0);
+
+  // Check if any row has extra quantities
+  const hasExtraQuantities = rows.some(r => r.extraQty > 0);
 
   return (
     <Card>
@@ -49,23 +54,31 @@ export default function ExecutionPanel({
                 <TableHead className="w-28 text-center">Contratado</TableHead>
                 <TableHead className="w-28 text-center">Ejecutado</TableHead>
                 <TableHead className="w-28 text-center">Restante</TableHead>
+                {hasExtraQuantities && (
+                  <TableHead className="w-28 text-center">Cantidades Mayores</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5 + deliverables.length} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={hasExtraQuantities ? 6 : 5} className="text-sm text-muted-foreground">
                     No items in scope.
                   </TableCell>
                 </TableRow>
               ) : (
                 rows.map((r) => (
-                  <TableRow key={r.key}>
+                  <TableRow key={r.key} className={r.extraQty > 0 ? "bg-blue-50" : ""}>
                     <TableCell>{r.descripcion}</TableCell>
                     <TableCell className="text-center">{r.unidad ?? ""}</TableCell>
                     <TableCell className="text-center tabular-nums">{fmt(r.contracted)}</TableCell>
                     <TableCell className="text-center tabular-nums">{fmt(r.executedTotal)}</TableCell>
                     <TableCell className="text-center tabular-nums">{fmt(r.remaining)}</TableCell>
+                    {hasExtraQuantities && (
+                      <TableCell className="text-center tabular-nums">
+                        {r.extraQty > 0 ? fmt(r.extraQty) : ""}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}

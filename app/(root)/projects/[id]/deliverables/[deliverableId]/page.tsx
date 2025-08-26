@@ -42,7 +42,7 @@ export default async function DeliverableDetailPage({
     new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 }).format(n || 0);
 
   return (
-    <div className="mx-auto max-w-[1000px] space-y-6 p-4 md:p-6">
+    <div className="mx-auto max-w-[1200px] space-y-6 p-4 md:p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
@@ -53,7 +53,13 @@ export default async function DeliverableDetailPage({
             {proj?.project_client ? <>· Cliente: <span className="font-medium">{proj.project_client}</span></> : null}
           </p>
           <div className="text-xs text-muted-foreground">
-            {new Date(header.created_at).toLocaleString()}
+            {new Date(header.created_at).toLocaleDateString('es-ES', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
             {header.created_by ? <> · by {header.created_by}</> : null}
           </div>
         </div>

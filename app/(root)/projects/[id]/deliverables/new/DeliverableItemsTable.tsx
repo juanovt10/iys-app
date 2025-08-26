@@ -12,6 +12,7 @@ export type DeliverableRow = {
   executedSoFar: number;
   remaining: number;
   qty: number;
+  extraQty: number; // New field for quantities exceeding contracted
   error?: string;
 };
 
@@ -27,6 +28,12 @@ export default function DeliverableItemsTable({
   const fmt = (n: number) =>
     new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 }).format(n || 0);
 
+  // Check if any row has existing extra quantities from previous deliverables
+  const hasExtraQuantities = rows.some(r => {
+    const existingExtra = Math.max(0, r.executedSoFar - r.contracted);
+    return existingExtra > 0;
+  });
+
   return (
     <div className="overflow-x-auto rounded-md border">
       <Table>
@@ -40,16 +47,21 @@ export default function DeliverableItemsTable({
               Ejecutado<br/><span className="text-[10px] text-muted-foreground">hasta hoy</span>
             </TableHead>
             <TableHead className="w-28 text-center">Restante</TableHead>
+            {hasExtraQuantities && (
+              <TableHead className="w-40 text-center">Cantidades Mayores</TableHead>
+            )}
             <TableHead className="w-40 text-center">Ejecutado (nuevo)</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((r, index) => {
             const rowNo = rows.length - index;
-            const overBy = r.qty - r.remaining;
-            const isOver = overBy > 0;
+            const overBy = Math.max(0, r.qty - r.remaining);
+            const hasExtra = overBy > 0;
+            const existingExtra = Math.max(0, r.executedSoFar - r.contracted);
+            
             return (
-              <TableRow key={`${r.itemId ?? "x"}-${index}`} className={isOver ? "bg-red-50" : ""}>
+              <TableRow key={`${r.itemId ?? "x"}-${index}`} className={hasExtra ? "bg-blue-50" : ""}>
                 <TableCell className="text-center font-medium">{rowNo}</TableCell>
                 <TableCell>
                   <div className="max-w-[800px] whitespace-pre-wrap">{r.descripcion}</div>
@@ -58,6 +70,11 @@ export default function DeliverableItemsTable({
                 <TableCell className="text-center tabular-nums">{fmt(r.contracted)}</TableCell>
                 <TableCell className="text-center tabular-nums">{fmt(r.executedSoFar)}</TableCell>
                 <TableCell className="text-center tabular-nums">{fmt(r.remaining)}</TableCell>
+                {hasExtraQuantities && (
+                  <TableCell className="text-center tabular-nums">
+                    {existingExtra > 0 ? fmt(existingExtra) : ""}
+                  </TableCell>
+                )}
                 <TableCell>
                   <div className="relative">
                     <NumericFormat
@@ -66,14 +83,12 @@ export default function DeliverableItemsTable({
                       allowNegative={false}
                       decimalScale={3}
                       value={r.qty}
-                      className={`w-full rounded border px-2 py-1 text-center tabular-nums ${
-                        isOver ? "border-red-300" : ""
-                      }`}
+                      className="w-full rounded border px-2 py-1 text-center tabular-nums"
                       onValueChange={(v) => onQtyChange(index, v.floatValue ?? 0)}
                     />
-                    {isOver && (
-                      <div className="mt-1 text-xs text-red-600">
-                        Excede por {fmt(overBy)} {r.unidad ?? ""}. Ajusta la cantidad.
+                    {hasExtra && (
+                      <div className="mt-1 text-xs text-blue-600">
+                        +{fmt(overBy)} {r.unidad ?? ""} extra
                       </div>
                     )}
                   </div>

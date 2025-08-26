@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import DeliverableItemsTable, { DeliverableRow } from "./DeliverableItemsTable";
 
 type ItemInput = {
@@ -27,6 +28,9 @@ export default function DeliverableCreateClient({
   const { toast } = useToast();
 
   const [saving, setSaving] = useState(false);
+  const [showFinalDialog, setShowFinalDialog] = useState(false);
+  const [isFinalDeliverable, setIsFinalDeliverable] = useState(false);
+  const [projectProgress, setProjectProgress] = useState(0);
   const [rows, setRows] = useState<DeliverableRow[]>(
     items.map((it) => ({
       itemId: it.itemId,
@@ -36,10 +40,11 @@ export default function DeliverableCreateClient({
       executedSoFar: 0,
       remaining: it.contracted,
       qty: 0,
+      extraQty: 0,
     }))
   );
 
-  // Load executed so far to compute remaining
+  // Load executed so far to compute remaining and check progress
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -68,22 +73,44 @@ export default function DeliverableCreateClient({
       }
 
       if (!mounted) return;
-      setRows((prev) =>
-        prev.map((r) => {
-          const key = r.itemId != null ? `i:${r.itemId}` : `d:${r.descripcion.trim().toLowerCase()}`;
-          const executedSoFar = sum.get(key) || 0;
-          const remaining = Math.max(0, (r.contracted || 0) - executedSoFar);
-          return { ...r, executedSoFar, remaining, qty: r.qty };
-        })
-      );
+      
+      // Calculate project progress
+      let totalContracted = 0;
+      let totalExecuted = 0;
+      
+      const updatedRows = items.map((it) => {
+        const key = it.itemId != null ? `i:${it.itemId}` : `d:${it.descripcion.trim().toLowerCase()}`;
+        const executedSoFar = sum.get(key) || 0;
+        const remaining = Math.max(0, (it.contracted || 0) - executedSoFar);
+        
+        totalContracted += it.contracted;
+        totalExecuted += executedSoFar;
+        
+        return {
+          itemId: it.itemId,
+          descripcion: it.descripcion,
+          unidad: it.unidad,
+          contracted: it.contracted,
+          executedSoFar,
+          remaining,
+          qty: 0,
+          extraQty: 0,
+        };
+      });
+      
+      setRows(updatedRows);
+      
+      // Calculate progress percentage
+      const progress = totalContracted > 0 ? Math.round((totalExecuted / totalContracted) * 100) : 0;
+      setProjectProgress(progress);
     })();
     return () => {
       mounted = false;
     };
-  }, [project.id, supabase]);
+  }, [project.id, supabase, items]);
 
   const hasAnyQty = rows.some((r) => r.qty > 0);
-  const canSave = hasAnyQty && !saving; // ✅ allow save even with overages; we validate on click
+  const canSave = hasAnyQty && !saving;
 
   function onQtyChange(index: number, nextQty: number) {
     if (nextQty < 0) nextQty = 0;
@@ -95,43 +122,45 @@ export default function DeliverableCreateClient({
   }
 
   async function onSave() {
-    // Validate on click (better UX: button stays enabled)
-    const over = rows
-      .map((r, i) => ({ r, i }))
-      .filter(({ r }) => r.qty > r.remaining);
-
-    if (over.length) {
-      const first = over[0];
-      const overCount = over.length;
-      const list = over.slice(0, 3).map(({ r }) => `• ${r.descripcion}`).join("\n");
-      toast({
-        variant: "destructive",
-        title: "Cantidades exceden lo contratado",
-        description:
-          (overCount > 1
-            ? `Hay ${overCount} ítems con exceso:\n${list}${overCount > 3 ? "\n…" : ""}`
-            : `“${first.r.descripcion}” excede el restante (${new Intl.NumberFormat().format(
-                first.r.remaining
-              )} ${first.r.unidad ?? ""}).`) + " Ajusta las cantidades y vuelve a guardar.",
-      });
-      // Focus & scroll to first invalid input
-      requestAnimationFrame(() => {
-        document.getElementById(`row-${first.i}-qty`)?.scrollIntoView({ behavior: "smooth", block: "center" });
-        (document.getElementById(`row-${first.i}-qty`) as HTMLInputElement | null)?.focus();
-      });
+    // Check if project is over 50% and show final deliverable dialog
+    if (projectProgress > 50 && !isFinalDeliverable) {
+      setShowFinalDialog(true);
       return;
     }
 
+    await createDeliverable();
+  }
+
+  async function createDeliverable(isFinal: boolean = isFinalDeliverable) {
     try {
       setSaving(true);
       const projectId = /^\d+$/.test(project.id) ? Number(project.id) : project.id;
 
-      // Create header
-      const { data: newId, error: e1 } = await supabase.rpc("create_deliverable", {
-        p_project_id: projectId as any,
-      });
+      // Get the next deliverable number for this project
+      const { data: existingDeliverables } = await supabase
+        .from("deliverables")
+        .select("deliverable_no")
+        .eq("project_id", projectId)
+        .order("deliverable_no", { ascending: false })
+        .limit(1);
+      
+      const nextDeliverableNo = existingDeliverables && existingDeliverables.length > 0 
+        ? Math.max(...existingDeliverables.map(d => Number(d.deliverable_no))) + 1 
+        : 1;
+
+      // Create deliverable header directly with is_final flag
+      const { data: newDeliverable, error: e1 } = await supabase
+        .from("deliverables")
+        .insert({
+          project_id: projectId,
+          deliverable_no: nextDeliverableNo,
+          is_final: isFinal,
+        })
+        .select("id")
+        .single();
+      
       if (e1) throw e1;
-      const deliverableId = Number(newId);
+      const deliverableId = Number(newDeliverable.id);
 
       // Insert lines
       const lines = rows
@@ -149,7 +178,13 @@ export default function DeliverableCreateClient({
         if (e2) throw e2;
       }
 
-      toast({ title: "Entregable creado", description: "Las cantidades fueron registradas." });
+      console.log("Deliverable created successfully:", { deliverableId, isFinal: isFinal });
+
+      const deliverableType = isFinal ? "Acta de Entrega Final" : "Acta de Entrega";
+      toast({ 
+        title: `${deliverableType} creada`, 
+        description: isFinal ? "Las cantidades fueron registradas. No se pueden crear más actas de entrega para este proyecto." : "Las cantidades fueron registradas." 
+      });
       router.push(`/projects/${project.id}`);
       setTimeout(() => router.refresh(), 0);
     } catch (e: any) {
@@ -165,13 +200,18 @@ export default function DeliverableCreateClient({
   }
 
   return (
-    <div className="mx-auto max-w-[1000px] space-y-6 p-4 md:p-6">
+    <div className="mx-auto max-w-[1200px] space-y-6 p-4 md:p-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Nueva Acta de Entrega</h1>
         <p className="text-sm text-muted-foreground">
           Proyecto: <span className="font-medium">{project.name}</span> · Cliente:{" "}
           <span className="font-medium">{project.clientName}</span> · Cotización {project.quoteNumero} rev{project.revision}
         </p>
+        {projectProgress > 50 && (
+          <div className="mt-2 text-sm text-amber-600">
+            ⚠️ Proyecto al {projectProgress}% de ejecución. Considera si esta es la Acta de Entrega Final.
+          </div>
+        )}
       </div>
 
       <Card>
@@ -191,9 +231,43 @@ export default function DeliverableCreateClient({
           Cancelar
         </Button>
         <Button onClick={onSave} disabled={!canSave}>
-          {saving ? "Guardando…" : "Guardar entregable"}
+          {saving ? "Creando…" : isFinalDeliverable ? "Crear Acta de Entrega Final" : "Crear Acta de Entrega"}
         </Button>
       </div>
+
+      {/* Final Deliverable Dialog */}
+      <Dialog open={showFinalDialog} onOpenChange={setShowFinalDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Es esta la Acta de Entrega Final?</DialogTitle>
+            <DialogDescription>
+              El proyecto está al {projectProgress}% de ejecución. Si marcas esta como Acta de Entrega Final, 
+              no se podrán crear más actas de entrega para este proyecto.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowFinalDialog(false);
+                setIsFinalDeliverable(false);
+                createDeliverable(false);
+              }}
+            >
+              No, es una entrega normal
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowFinalDialog(false);
+                setIsFinalDeliverable(true);
+                createDeliverable(true);
+              }}
+            >
+              Sí, es la entrega final
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

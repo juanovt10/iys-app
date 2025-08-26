@@ -5,17 +5,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, CheckCircle2, Circle } from "lucide-react";
 
 export default function CreateCutClient({
   projectId,
   deliverables,
 }: {
   projectId: string;
-  deliverables: { id: number; no: number; date: string }[];
+  deliverables: { id: number; no: number; date: string; isFinal: boolean }[];
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -24,8 +23,18 @@ export default function CreateCutClient({
   const [selected, setSelected] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
 
-  const toggle = (id: number) =>
-    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  const toggle = (id: number) => {
+    setSelected(prev => 
+      prev.includes(id) 
+        ? prev.filter(x => x !== id)
+        : [...prev, id]
+    );
+  };
+
+  // Check if any selected deliverable is final
+  const hasFinalDeliverable = selected.some(id => 
+    deliverables.find(d => d.id === id)?.isFinal
+  );
 
   async function onCreate() {
     if (selected.length === 0) {
@@ -40,7 +49,26 @@ export default function CreateCutClient({
         p_deliverable_ids: selected as any,
       });
       if (error) throw error;
-      toast({ title: "Corte creado" });
+      
+      // Update the cut to mark it as final if needed
+      if (hasFinalDeliverable) {
+        try {
+          const { error: updateError } = await supabase
+            .from("cuts")
+            .update({ is_final: true })
+            .eq("id", data);
+          if (updateError) {
+            console.error("Failed to mark cut as final:", updateError);
+            // Don't throw here, the cut was created successfully
+          }
+        } catch (error) {
+          console.error("Error updating final flag:", error);
+          // Continue anyway - the cut was created successfully
+        }
+      }
+
+      const cutType = hasFinalDeliverable ? "Corte Final" : "Corte";
+      toast({ title: `${cutType} creado` });
       router.push(`/projects/${projectId}/cuts/${data}`);
       setTimeout(() => router.refresh(), 0);
     } catch (e: any) {
@@ -68,15 +96,23 @@ export default function CreateCutClient({
               key={d.id}
               className="flex items-center justify-between gap-3 rounded-md border p-3"
             >
-              {/* Left: D# and date */}
+              {/* Left: Acta de Entrega # and date */}
               <div className="min-w-0">
-                <div className="font-medium">D{d.no}</div>
+                <div className="font-medium">
+                  {d.isFinal ? "Acta de Entrega Final" : "Acta de Entrega"} #{d.no}
+                </div>
                 <div className="text-sm text-muted-foreground">
-                  {new Date(d.date).toLocaleString()}
+                  {new Date(d.date).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                 </div>
               </div>
 
-              {/* Right: View link + checkbox */}
+              {/* Right: View link + selection */}
               <div className="flex items-center gap-3">
                 <Button
                   asChild
@@ -93,20 +129,24 @@ export default function CreateCutClient({
                   </Link>
                 </Button>
 
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id={`deliv-${d.id}`}
-                    checked={selected.includes(d.id)}
-                    onCheckedChange={() => toggle(d.id)}
-                    aria-label={`Agregar D${d.no} al corte`}
-                  />
-                  <label
-                    htmlFor={`deliv-${d.id}`}
-                    className="text-sm cursor-pointer select-none"
-                  >
-                    Agregar
-                  </label>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => toggle(d.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
+                    selected.includes(d.id) 
+                      ? "bg-muted text-foreground" 
+                      : "hover:bg-muted/60 text-muted-foreground"
+                  }`}
+                >
+                  {selected.includes(d.id) ? (
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                  ) : (
+                    <Circle className="h-5 w-5" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {selected.includes(d.id) ? "Seleccionado" : "Seleccionar"}
+                  </span>
+                </button>
               </div>
             </li>
           ))
@@ -117,8 +157,8 @@ export default function CreateCutClient({
         <Button variant="outline" onClick={() => router.back()} disabled={saving}>
           Cancelar
         </Button>
-        <Button onClick={onCreate} disabled={saving || deliverables.length === 0}>
-          {saving ? "Creando…" : "Crear corte"}
+        <Button onClick={onCreate} disabled={saving || selected.length === 0}>
+          {saving ? "Creando…" : hasFinalDeliverable ? "Crear Corte Final" : "Crear corte"}
         </Button>
       </div>
     </div>
