@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import DeliverableItemsTable, { DeliverableRow } from "./DeliverableItemsTable";
 import { updateProjectStatusToCompleted } from "@/lib/actions";
+import { buildDeliverableAPIData, getDeliverableAPIFiles, saveDeliverableData } from '@/lib/supabase/apiService';
 
 type ItemInput = {
   itemId: number | null;
@@ -193,6 +194,25 @@ export default function DeliverableCreateClient({
       }
 
       console.log("Deliverable created successfully:", { deliverableId, isFinal: isFinal });
+
+      // Generate documents for the deliverable
+      try {
+        console.log("Generating documents for deliverable:", deliverableId);
+        const apiData = await buildDeliverableAPIData(deliverableId, projectId, supabase);
+        const generatedFiles = await getDeliverableAPIFiles(apiData);
+        
+        // Update deliverable with file URLs
+        await saveDeliverableData({
+          id: deliverableId,
+          excel_file: generatedFiles.excelUrl,
+          pdf_file: generatedFiles.pdfUrl
+        });
+        
+        console.log("Documents generated successfully for deliverable:", deliverableId);
+      } catch (error) {
+        console.error("Error generating documents for deliverable:", error);
+        // Don't fail the entire operation if document generation fails
+      }
 
       const deliverableType = isFinal ? "Acta de Entrega Final" : "Acta de Entrega";
       toast({ 

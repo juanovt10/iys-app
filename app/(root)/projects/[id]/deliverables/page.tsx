@@ -33,7 +33,7 @@ export default async function DeliverablesPage({
   // Deliverable headers
   const { data: headers } = await supabase
     .from("deliverables")
-    .select("id, deliverable_no, created_at, created_by")
+    .select("id, deliverable_no, created_at, created_by, excel_file, pdf_file")
     .eq("project_id", projectIdFilter)
     .order("deliverable_no", { ascending: true });
 
@@ -125,6 +125,8 @@ export default async function DeliverablesPage({
       itemsCount: agg.itemsCount,
       totalQty: agg.totalQty,
       preview: agg.preview,
+      excelFile: h.excel_file as string | null,
+      pdfFile: h.pdf_file as string | null,
     };
   });
 

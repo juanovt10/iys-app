@@ -6,7 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, ExternalLink, Search } from "lucide-react";
+import { ExternalLink, Search } from "lucide-react";
+import DeliverableDownloadButton from "@/components/DeliverableDownloadButton";
+import { 
+  buildDeliverableAPIData, 
+  getDeliverableAPIFiles, 
+  saveDeliverableData
+} from '@/lib/supabase/apiService';
+import { createClient } from '@/lib/supabase/client';
 
 type Row = {
   id: number;
@@ -16,6 +23,8 @@ type Row = {
   itemsCount: number;
   totalQty: number;
   preview: { descripcion: string; unidad: string | null; qty: number }[];
+  excelFile?: string | null;
+  pdfFile?: string | null;
 };
 
 export default function DeliverablesListClient({
@@ -27,9 +36,39 @@ export default function DeliverablesListClient({
 }) {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"no_asc" | "date_desc">("no_asc");
+  const [generatingFor, setGeneratingFor] = useState<number | null>(null);
+  
+  const supabase = createClient();
 
   const fmtNum = (n: number) =>
     new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 }).format(n || 0);
+
+  const handleGenerateDocuments = async (deliverableId: number) => {
+    setGeneratingFor(deliverableId);
+    
+    try {
+      // Build the API data
+      const apiData = await buildDeliverableAPIData(deliverableId, projectId, supabase);
+      
+      // Generate documents via API
+      const files = await getDeliverableAPIFiles(apiData);
+      
+      // Update deliverable with file URLs
+      await saveDeliverableData({
+        id: deliverableId,
+        excel_file: files.excelUrl,
+        pdf_file: files.pdfUrl
+      });
+      
+      // Refresh the page to show updated files
+      window.location.reload();
+    } catch (error) {
+      console.error('Error generating documents:', error);
+      // You might want to show an error toast here
+    } finally {
+      setGeneratingFor(null);
+    }
+  };
 
   const filtered = useMemo(() => {
     let r = [...rows];
@@ -122,10 +161,13 @@ export default function DeliverablesListClient({
                               Ver
                             </Link>
                           </Button>
-                          <Button size="sm" className="gap-1" disabled>
-                            <Download className="h-4 w-4" />
-                            Descargar
-                          </Button>
+                          <DeliverableDownloadButton
+                            excelFile={d.excelFile}
+                            pdfFile={d.pdfFile}
+                            onGenerateDocuments={() => handleGenerateDocuments(d.id)}
+                            isGenerating={generatingFor === d.id}
+                            className="text-xs"
+                          />
                         </div>
                       </TableCell>
                     </TableRow>
