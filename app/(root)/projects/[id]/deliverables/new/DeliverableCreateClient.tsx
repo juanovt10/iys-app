@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import DeliverableItemsTable, { DeliverableRow } from "./DeliverableItemsTable";
 import { updateProjectStatusToCompleted } from "@/lib/actions";
 import { buildDeliverableAPIData, getDeliverableAPIFiles, saveDeliverableData } from '@/lib/supabase/apiService';
+import { Loader2 } from "lucide-react";
 
 type ItemInput = {
   itemId: number | null;
@@ -270,8 +271,13 @@ export default function DeliverableCreateClient({
         <Button variant="outline" onClick={() => router.back()} disabled={saving}>
           Cancelar
         </Button>
-        <Button onClick={onSave} disabled={!canSave}>
-          {saving ? "Creando…" : isFinalDeliverable ? "Crear Acta de Entrega Final" : "Crear Acta de Entrega"}
+        <Button onClick={onSave} disabled={!canSave || saving}>
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creando…
+            </>
+          ) : isFinalDeliverable ? "Crear Acta de Entrega Final" : "Crear Acta de Entrega"}
         </Button>
       </div>
 

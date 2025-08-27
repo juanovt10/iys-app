@@ -373,3 +373,143 @@ export const buildDeliverableAPIData = async (
     throw error;
   }
 };
+
+// Cuts API functions
+export const getCutAPIFiles = async (apiData: APIData): Promise<{ excelUrl: string; pdfUrl: string }> => {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_DEPLOYED_API_URL}/api/cuts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(apiData),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error('Failed to send data to cuts API');
+  }
+
+  const data = await response.json();
+
+  const getKeyFromUrl = (url: string): string => {
+    const urlObj = new URL(url);
+    return urlObj.pathname.substring(1);
+  };
+
+  const excelKey = getKeyFromUrl(data.excelUrl);
+  const pdfKey = getKeyFromUrl(data.pdfUrl);
+
+  const excelUrl = `${process.env.NEXT_PUBLIC_S3_PROXY_API_URL}/download/${excelKey}`;
+  const pdfUrl = `${process.env.NEXT_PUBLIC_S3_PROXY_API_URL}/download/${pdfKey}`;
+
+  return { excelUrl, pdfUrl };
+};
+
+export const saveCutData = async (cutData: any): Promise<any> => {
+  try {
+    let returnedData, error;
+
+    if (cutData.id) {
+      ({ data: returnedData, error } = await supabase
+        .from('cuts')
+        .update(cutData)
+        .eq('id', cutData.id));
+    } else {
+      ({ data: returnedData, error } = await supabase
+        .from('cuts')
+        .insert([cutData]));
+    }
+
+    if (error) {
+      throw error;
+    }
+
+    return returnedData ? returnedData[0] : null;
+  } catch (error) {
+    console.error('Failed to save cut data:', error);
+    return null;
+  }
+};
+
+// Function to build cut JSON data for API
+export const buildCutAPIData = async (
+  cutId: number,
+  projectId: number | string,
+  supabase: any
+): Promise<APIData> => {
+  try {
+    // Get cut header
+    const { data: cut } = await supabase
+      .from('cuts')
+      .select('cut_no, project_id')
+      .eq('id', cutId)
+      .single();
+
+    if (!cut) {
+      throw new Error('Cut not found');
+    }
+
+    // Get project information
+    const { data: project } = await supabase
+      .from('v_projects_dashboard')
+      .select('name, project_client, quote_numero, latest_revision')
+      .eq('id', projectId)
+      .single();
+
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    // Get client information from the quote
+    const { data: quote } = await supabase
+      .from('cotizaciones')
+      .select('cliente')
+      .eq('numero', project.quote_numero)
+      .eq('revision', project.latest_revision)
+      .single();
+
+    if (!quote) {
+      throw new Error('Quote not found');
+    }
+
+    // Get client details
+    const { data: client } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('nombre_empresa', quote.cliente)
+      .single();
+
+    if (!client) {
+      throw new Error('Client not found');
+    }
+
+    // Get cut lines (items with prices)
+    const { data: lines } = await supabase
+      .from('cut_lines')
+      .select('descripcion, unidad, qty, unit_price')
+      .eq('cut_id', cutId);
+
+    // Format the items for the API - include prices like quotes
+    const formattedItems = (lines || []).map((line: any) => ({
+      id: 0, // Cuts don't have item IDs, use 0 as placeholder
+      descripcion: line.descripcion,
+      unidad: line.unidad,
+      cantidad: Number(line.qty) || 0,
+      precio_unidad: Number(line.unit_price) || 0
+    }));
+
+    // Build the API data structure
+    const apiData = {
+      cutId: `${cut.cut_no}-${project.quote_numero}`,
+      projectName: project.name,
+      clientInfo: client,
+      items: formattedItems
+    };
+
+    console.log('Cut API Data:', JSON.stringify(apiData, null, 2));
+    return apiData;
+  } catch (error) {
+    console.error('Failed to build cut API data:', error);
+    throw error;
+  }
+};

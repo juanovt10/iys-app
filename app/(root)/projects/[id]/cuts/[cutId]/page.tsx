@@ -1,11 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient as createServerSupabase } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Download } from "lucide-react";
-import { calculateTotals, formatWithCommas } from "@/lib/utils";
+import CutDetailClient from "./CutDetailClient";
+import { calculateTotals } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,6 +14,8 @@ type CutHeader = {
   total_amount: number | string | null;
   created_at: string;
   is_final?: boolean;
+  excel_file?: string | null;
+  pdf_file?: string | null;
 };
 
 type CutLine = {
@@ -41,7 +39,7 @@ export default async function CutDetailPage({
   // 1) Cut header
   const { data: cut, error: cutErr } = await supabase
     .from("cuts")
-    .select("id, project_id, cut_no, status, total_amount, created_at")
+    .select("id, project_id, cut_no, status, total_amount, created_at, excel_file, pdf_file")
     .eq("id", cutId)
     .maybeSingle<CutHeader>();
 
@@ -72,9 +70,9 @@ export default async function CutDetailPage({
   // 2) Project (for header context)
   const { data: proj } = await supabase
     .from("v_projects_dashboard")
-    .select("id, name, project_client")
+    .select("id, name, project_client, quote_numero, latest_revision")
     .eq("id", cut.project_id)
-    .maybeSingle<{ id: number | string; name: string; project_client: string | null }>();
+    .maybeSingle<{ id: number | string; name: string; project_client: string | null; quote_numero: number; latest_revision: number }>();
 
   // 3) Lines
   const { data: lines } = await supabase
@@ -109,102 +107,11 @@ export default async function CutDetailPage({
   const { subtotal, aiu20, iva, total } = calculateTotals(itemsForCalculation);
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-6 p-4 md:p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
-            {isFinal ? "Corte Final" : `Corte #${cut.cut_no}`}
-          </h1>
-          <div className="text-sm text-muted-foreground">
-            <span>
-              Proyecto: <span className="font-medium">{proj?.name ?? "—"}</span>
-            </span>
-            {proj?.project_client ? (
-              <> · Cliente: <span className="font-medium">{proj.project_client}</span></>
-            ) : null}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {new Date(cut.created_at).toLocaleDateString('es-ES', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit'
-            })} · Status: {cut.status}
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" className="gap-1">
-            <Link href={`/projects/${params.id}/cuts`}>
-              <ArrowLeft className="h-4 w-4" /> Atras
-            </Link>
-          </Button>
-          <Button disabled className="gap-1">
-            <Download className="h-4 w-4" /> Descargar
-          </Button>
-        </div>
-      </div>
-
-      {/* Lines */}
-      <Card>
-        <CardHeader className="p-4 border-b">
-          <CardTitle className="text-base">Items</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Descripción</TableHead>
-                  <TableHead className="w-20 text-center">Unidad</TableHead>
-                  <TableHead className="w-28 text-center">Cantidad</TableHead>
-                  <TableHead className="w-32 text-right">Precio/U</TableHead>
-                  <TableHead className="w-36 text-right">Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tableEmpty ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-sm text-muted-foreground">
-                      No lines.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  linesArr.map((ln, i) => (
-                    <TableRow key={i}>
-                      <TableCell>{ln.descripcion}</TableCell>
-                      <TableCell className="text-center">{ln.unidad ?? ""}</TableCell>
-                      <TableCell className="text-center tabular-nums">{num(ln.qty)}</TableCell>
-                      <TableCell className="text-right tabular-nums">{money(ln.unit_price)}</TableCell>
-                      <TableCell className="text-right tabular-nums">{money(ln.line_total)}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Totals */}
-      <div className="flex justify-end">
-        <div className="text-right space-y-2">
-          <div className="text-sm text-muted-foreground">Subtotal</div>
-          <div className="text-lg">${formatWithCommas(subtotal)}</div>
-          
-          <div className="text-sm text-muted-foreground">AIU (20%)</div>
-          <div className="text-lg">${formatWithCommas(aiu20)}</div>
-          
-          <div className="text-sm text-muted-foreground">IVA</div>
-          <div className="text-lg">${formatWithCommas(iva)}</div>
-          
-          <div className="text-sm text-muted-foreground font-medium">Total</div>
-          <div className="text-xl font-semibold">
-            ${formatWithCommas(total)}
-          </div>
-        </div>
-      </div>
-    </div>
+    <CutDetailClient
+      cut={{ ...cut, is_final: isFinal }}
+      project={proj}
+      lines={linesArr}
+      projectId={params.id}
+    />
   );
 }

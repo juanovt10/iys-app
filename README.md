@@ -15,9 +15,11 @@ A comprehensive guide to the **Projects** module built on top of your quoting sy
 **Added now**
 - **Projects dashboard** – list and manage projects
 - **Create Project flow** – link projects to quotes
-- **Deliverables system** – track project execution
-- **Cuts system** – manage project cuts/invoicing
+- **Deliverables system** – track project execution with PDF/Excel generation
+- **Cuts system** – manage project cuts/invoicing with PDF/Excel generation
 - **Automatic status management** – projects auto-complete when final deliverable is created
+- **Document generation** – automatic PDF/Excel creation for deliverables and cuts
+- **Consistent UI patterns** – loading states, icons, and button styling across all creation flows
 
 ---
 
@@ -56,26 +58,37 @@ app/(root)/projects/
     ├── deliverables/
     │   ├── page.tsx              # Deliverables list - Server Component
     │   ├── DeliverablesListClient.tsx # Client wrapper for deliverables
+    │   ├── [deliverableId]/
+    │   │   ├── page.tsx          # Deliverable detail - Server Component
+    │   │   └── DeliverableDetailClient.tsx # Client wrapper with download
     │   └── new/
     │       ├── page.tsx          # Create deliverable - Server Component
     │       ├── DeliverableCreateClient.tsx # Client wrapper
     │       └── DeliverableItemsTable.tsx # Items table with quantities
     └── cuts/
         ├── page.tsx              # Cuts list - Server Component
+        ├── CutsListClient.tsx    # Client wrapper for cuts list
         ├── new/
         │   ├── page.tsx          # Create cut - Server Component
         │   └── CreateCutClient.tsx # Client wrapper
         └── [cutId]/
-            └── page.tsx          # Individual cut detail
+            ├── page.tsx          # Cut detail - Server Component
+            └── CutDetailClient.tsx # Client wrapper with download
 
 hooks/
 └── useLatestQuotes.ts            # Client hook: fetch latest quotes + sorting
+
+components/
+├── DeliverableDownloadButton.tsx # Reusable download component for deliverables
+├── CutDownloadButton.tsx         # Reusable download component for cuts
+└── ui/                          # shadcn/ui components
 
 lib/
 ├── actions.ts                    # Server actions for database operations
 └── supabase/
     ├── client.ts                 # createClient (Supabase browser client)
-    └── server.ts                 # createClient (Supabase server client)
+    ├── server.ts                 # createClient (Supabase server client)
+    └── apiService.ts             # Document generation API functions
 
 types/
 └── index.d.ts                    # TypeScript type definitions
@@ -103,6 +116,8 @@ types/
 - project_id: bigint (foreign key to proyectos)
 - deliverable_no: integer (sequential number)
 - is_final: boolean (marks final deliverable)
+- excel_file: text (S3 URL for generated Excel file)
+- pdf_file: text (S3 URL for generated PDF file)
 - created_at: timestamp
 - created_by: uuid (user who created it)
 ```
@@ -123,6 +138,8 @@ types/
 - project_id: bigint (foreign key to proyectos)
 - cut_no: integer (sequential number)
 - is_final: boolean (marks final cut)
+- excel_file: text (S3 URL for generated Excel file)
+- pdf_file: text (S3 URL for generated PDF file)
 - created_at: timestamp
 ```
 
@@ -288,14 +305,31 @@ CREATE POLICY "proyectos_update_authenticated" ON proyectos FOR UPDATE USING (tr
   - Fetches all deliverables for project
   - Aggregates line items
   - Checks for final deliverables
+  - Fetches file URLs for downloads
   - Redirects if final deliverable exists
 
 #### Client Component: `DeliverablesListClient.tsx`
 - **Purpose**: Deliverables list interface
 - **Key Features**:
-  - List of deliverables
+  - List of deliverables with download buttons
   - Create button (disabled if final exists)
   - Preview of items in each deliverable
+  - On-demand document generation
+
+#### Server Component: `[id]/deliverables/[deliverableId]/page.tsx`
+- **Purpose**: Individual deliverable detail page
+- **Key Features**:
+  - Fetches deliverable details
+  - Loads project and client information
+  - Fetches file URLs for downloads
+
+#### Client Component: `DeliverableDetailClient.tsx`
+- **Purpose**: Deliverable detail interface
+- **Key Features**:
+  - Deliverable information display
+  - Download button with generation capability
+  - Items table with quantities
+  - Automatic document generation on creation
 
 #### Server Component: `[id]/deliverables/new/page.tsx`
 - **Purpose**: Create deliverable page
@@ -328,6 +362,35 @@ CREATE POLICY "proyectos_update_authenticated" ON proyectos FOR UPDATE USING (tr
 
 ### 5. Cuts System
 
+#### Server Component: `[id]/cuts/page.tsx`
+- **Purpose**: Cuts list page
+- **Key Features**:
+  - Fetches all cuts for project
+  - Aggregates deliverables per cut
+  - Fetches file URLs for downloads
+
+#### Client Component: `CutsListClient.tsx`
+- **Purpose**: Cuts list interface
+- **Key Features**:
+  - List of cuts with download buttons
+  - Create button
+  - On-demand document generation
+
+#### Server Component: `[id]/cuts/[cutId]/page.tsx`
+- **Purpose**: Individual cut detail page
+- **Key Features**:
+  - Fetches cut details
+  - Loads project and client information
+  - Fetches file URLs for downloads
+
+#### Client Component: `CutDetailClient.tsx`
+- **Purpose**: Cut detail interface
+- **Key Features**:
+  - Cut information display
+  - Download button with generation capability
+  - Items table with quantities and prices
+  - Automatic document generation on creation
+
 #### Server Component: `[id]/cuts/new/page.tsx`
 - **Purpose**: Create cut page
 - **Key Features**:
@@ -341,6 +404,7 @@ CREATE POLICY "proyectos_update_authenticated" ON proyectos FOR UPDATE USING (tr
   - Deliverable selection
   - Final cut handling
   - Database insert with relationships
+  - Automatic document generation
 - **Props**: `projectId`, `deliverables[]`
 
 ---
@@ -403,6 +467,111 @@ CREATE POLICY "proyectos_update_authenticated" ON proyectos FOR UPDATE USING (tr
 - **URL State**: Search parameters, filters
 - **Server State**: Database as source of truth
 - **Cache**: Next.js automatic caching with revalidation
+
+---
+
+## Document Generation System
+
+### Overview
+The projects module includes comprehensive PDF/Excel generation for deliverables and cuts, following the same pattern as the existing quote system. Documents are automatically generated when items are created and can be downloaded on-demand.
+
+### Architecture
+
+#### API Service (`lib/supabase/apiService.ts`)
+- **`buildDeliverableAPIData()`** - Composes JSON data for deliverable documents
+- **`getDeliverableAPIFiles()`** - Sends data to `/api/deliverables` endpoint
+- **`saveDeliverableData()`** - Saves generated file URLs to database
+- **`buildCutAPIData()`** - Composes JSON data for cut documents
+- **`getCutAPIFiles()`** - Sends data to `/api/cuts` endpoint
+- **`saveCutData()`** - Saves generated file URLs to database
+
+#### JSON Data Structure
+
+**Deliverables:**
+```json
+{
+  "deliverableId": "1-113",
+  "projectName": "Project Name",
+  "clientInfo": { /* complete client data */ },
+  "items": [
+    {
+      "id": 123,
+      "descripcion": "Item description",
+      "unidad": "unit",
+      "cantidad": 5
+    }
+  ]
+}
+```
+
+**Cuts:**
+```json
+{
+  "cutId": "1-113",
+  "projectName": "Project Name", 
+  "clientInfo": { /* complete client data */ },
+  "items": [
+    {
+      "id": 0,
+      "descripcion": "Item description",
+      "unidad": "unit",
+      "cantidad": 5,
+      "precio_unidad": 100.00
+    }
+  ]
+}
+```
+
+### Document Generation Flow
+
+#### 1. Automatic Generation (On Creation)
+- **Deliverables**: Documents generated immediately after deliverable creation
+- **Cuts**: Documents generated immediately after cut creation
+- **Error Handling**: Creation succeeds even if document generation fails
+
+#### 2. On-Demand Generation
+- **Download Buttons**: Show "Generar Documentos" if files don't exist
+- **Loading States**: Spinner and disabled state during generation
+- **Success Feedback**: Button changes to "Descargar" after generation
+
+#### 3. File Storage & Access
+- **S3 Storage**: Files stored via external API
+- **Proxy URLs**: Access via `NEXT_PUBLIC_S3_PROXY_API_URL`
+- **Database Storage**: File URLs saved in `excel_file` and `pdf_file` columns
+
+### UI Components
+
+#### Download Components
+- **`DeliverableDownloadButton.tsx`** - Reusable download component for deliverables
+- **`CutDownloadButton.tsx`** - Reusable download component for cuts
+- **Features**:
+  - Smart button text ("Descargar" vs "Generar Documentos")
+  - Modal dialog with Excel/PDF download options
+  - Loading states and error handling
+  - Consistent styling with `size="sm"`
+
+#### Integration Points
+- **Deliverable Detail Page** - Download button in header
+- **Deliverables List** - Download button in each row
+- **Cut Detail Page** - Download button in header  
+- **Cuts List** - Download button in each row
+
+### Environment Variables
+```env
+NEXT_PUBLIC_DEPLOYED_API_URL=https://your-api.com
+NEXT_PUBLIC_S3_PROXY_API_URL=https://your-s3-proxy.com
+```
+
+### Database Updates Required
+```sql
+-- Add file columns to deliverables table
+ALTER TABLE deliverables ADD COLUMN IF NOT EXISTS excel_file TEXT;
+ALTER TABLE deliverables ADD COLUMN IF NOT EXISTS pdf_file TEXT;
+
+-- Add file columns to cuts table  
+ALTER TABLE cuts ADD COLUMN IF NOT EXISTS excel_file TEXT;
+ALTER TABLE cuts ADD COLUMN IF NOT EXISTS pdf_file TEXT;
+```
 
 ---
 
@@ -477,6 +646,62 @@ export async function generateProjectPDF(projectId: string) {
 
 ---
 
+## UI/UX Improvements
+
+### Consistent Loading States
+All creation buttons now follow the same loading pattern established in the project creation flow:
+
+#### Loading Button Pattern
+```tsx
+<Button onClick={onCreate} disabled={!canSubmit || creating}>
+  {creating ? (
+    <>
+      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      Creando…
+    </>
+  ) : "Button Text"}
+</Button>
+```
+
+#### Applied To:
+- **Crear Proyecto** (main projects dashboard)
+- **Nueva Acta de Entrega** (project dashboard)
+- **Nuevo Corte** (project dashboard)
+- **Crear Acta de Entrega** (deliverables form)
+
+### Consistent Iconography
+All creation buttons now use consistent icons matching the main projects dashboard table actions:
+
+#### Icon Usage:
+- **Deliverables**: `FileText` icon (📄)
+- **Cuts**: `Scissors` icon (✂️)
+
+#### Applied To:
+- **Project Dashboard** (`ProjectHeader.tsx`)
+- **Deliverables Page** (`deliverables/page.tsx`)
+- **Cuts Page** (`cuts/page.tsx`)
+- **Main Projects Table** (already had correct icons)
+
+### Button Height Consistency
+Fixed height inconsistencies in table rows by standardizing button sizes:
+
+#### Implementation:
+- **Download Buttons**: Now use `size="sm"` to match "Ver" buttons
+- **Consistent Spacing**: All action buttons in tables have uniform height
+- **Better Alignment**: Improved visual hierarchy in list views
+
+### Reusable Components
+Created reusable download components for consistent behavior:
+
+#### `DeliverableDownloadButton.tsx` & `CutDownloadButton.tsx`
+- **Smart Button Text**: "Descargar" vs "Generar Documentos"
+- **Modal Dialogs**: Excel/PDF download options
+- **Loading States**: Spinner during generation
+- **Error Handling**: Graceful failure handling
+- **Consistent Styling**: `size="sm"` for table integration
+
+---
+
 ## Error Handling
 
 ### Database Errors
@@ -517,12 +742,18 @@ export async function generateProjectPDF(projectId: string) {
 
 ## Future Enhancements
 
+### Completed Features ✅
+1. **PDF/Excel Generation**: Deliverables and cuts with automatic generation
+2. **Consistent UI Patterns**: Loading states, icons, and button styling
+3. **Reusable Components**: Download buttons with modal dialogs
+4. **Document Management**: S3 storage and proxy access
+
 ### Planned Features
-1. **PDF Generation**: Project summaries and deliverables
-2. **Email Notifications**: Status change alerts
-3. **Advanced Filtering**: Date ranges, progress thresholds
-4. **Bulk Operations**: Mass status updates
-5. **Audit Trail**: Detailed activity logging
+1. **Email Notifications**: Status change alerts
+2. **Advanced Filtering**: Date ranges, progress thresholds
+3. **Bulk Operations**: Mass status updates
+4. **Audit Trail**: Detailed activity logging
+5. **Project PDF Generation**: Project summaries and reports
 
 ### Technical Improvements
 1. **Real-time Updates**: Supabase subscriptions
@@ -551,6 +782,13 @@ export async function generateProjectPDF(projectId: string) {
 2. **RLS Policies**: Check INSERT/UPDATE permissions
 3. **Redirect Logic**: Verify redirect conditions
 
+#### Document Generation Issues
+1. **API Endpoints**: Verify `NEXT_PUBLIC_DEPLOYED_API_URL` is correct
+2. **S3 Proxy**: Check `NEXT_PUBLIC_S3_PROXY_API_URL` configuration
+3. **Database Columns**: Ensure `excel_file` and `pdf_file` columns exist
+4. **File URLs**: Check if generated URLs are accessible
+5. **Console Logs**: Look for API data structure in browser console
+
 ### Debug Commands
 
 ```sql
@@ -559,6 +797,10 @@ SELECT id, name, status FROM proyectos WHERE id = YOUR_PROJECT_ID;
 
 -- Check final deliverables
 SELECT id, project_id, is_final FROM deliverables WHERE project_id = YOUR_PROJECT_ID;
+
+-- Check document files
+SELECT id, excel_file, pdf_file FROM deliverables WHERE project_id = YOUR_PROJECT_ID;
+SELECT id, excel_file, pdf_file FROM cuts WHERE project_id = YOUR_PROJECT_ID;
 
 -- Check RLS policies
 SELECT * FROM pg_policies WHERE tablename = 'proyectos';

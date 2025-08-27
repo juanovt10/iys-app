@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient as createServerSupabase } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import DeliverablesListClient from "./DeliverablesListClient";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -155,8 +155,9 @@ export default async function DeliverablesPage({
               Acta Final Creada
             </Button>
           ) : (
-            <Button asChild>
+            <Button asChild className="gap-2">
               <Link href={`/projects/${params.id}/deliverables/new`}>
+                <FileText className="h-4 w-4" />
                 Nueva Acta de Entrega
               </Link>
             </Button>

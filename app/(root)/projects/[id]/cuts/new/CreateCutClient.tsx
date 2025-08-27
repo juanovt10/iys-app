@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { ExternalLink, CheckCircle2, Circle } from "lucide-react";
+import { ExternalLink, CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { buildCutAPIData, getCutAPIFiles, saveCutData } from '@/lib/supabase/apiService';
 
 export default function CreateCutClient({
   projectId,
@@ -65,6 +66,25 @@ export default function CreateCutClient({
           console.error("Error updating final flag:", error);
           // Continue anyway - the cut was created successfully
         }
+      }
+
+      // Generate documents for the cut
+      try {
+        console.log("Generating documents for cut:", data);
+        const apiData = await buildCutAPIData(data, projectId, supabase);
+        const generatedFiles = await getCutAPIFiles(apiData);
+        
+        // Update cut with file URLs
+        await saveCutData({
+          id: data,
+          excel_file: generatedFiles.excelUrl,
+          pdf_file: generatedFiles.pdfUrl
+        });
+        
+        console.log("Documents generated successfully for cut:", data);
+      } catch (error) {
+        console.error("Error generating documents for cut:", error);
+        // Don't fail the entire operation if document generation fails
       }
 
       const cutType = hasFinalDeliverable ? "Corte Final" : "Corte";
@@ -158,7 +178,12 @@ export default function CreateCutClient({
           Cancelar
         </Button>
         <Button onClick={onCreate} disabled={saving || selected.length === 0}>
-          {saving ? "Creando…" : hasFinalDeliverable ? "Crear Corte Final" : "Crear corte"}
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creando…
+            </>
+          ) : hasFinalDeliverable ? "Crear Corte Final" : "Crear corte"}
         </Button>
       </div>
     </div>

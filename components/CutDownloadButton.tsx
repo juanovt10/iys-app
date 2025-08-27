@@ -6,7 +6,7 @@ import { Download } from 'lucide-react';
 import Image from 'next/image';
 import { downloadFile } from '@/lib/supabase/apiService';
 
-interface DeliverableDownloadButtonProps {
+interface CutDownloadButtonProps {
   excelFile?: string;
   pdfFile?: string;
   onGenerateDocuments?: () => Promise<void>;
@@ -14,13 +14,13 @@ interface DeliverableDownloadButtonProps {
   className?: string;
 }
 
-export default function DeliverableDownloadButton({
+export default function CutDownloadButton({
   excelFile,
   pdfFile,
   onGenerateDocuments,
   isGenerating = false,
   className = ""
-}: DeliverableDownloadButtonProps) {
+}: CutDownloadButtonProps) {
   const [showDialog, setShowDialog] = useState(false);
 
   const hasFiles = excelFile && pdfFile;

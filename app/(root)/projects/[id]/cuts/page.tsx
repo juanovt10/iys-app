@@ -5,7 +5,8 @@ import { createClient as createServerSupabase } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Scissors } from "lucide-react";
+import CutsListClient from "./CutsListClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,7 +24,7 @@ export default async function CutsPage({ params }: { params: { id: string } }) {
 
   const { data: cuts } = await supabase
     .from("cuts")
-    .select("id, cut_no, status, total_amount, created_at")
+    .select("id, cut_no, status, total_amount, created_at, excel_file, pdf_file")
     .eq("project_id", pid)
     .order("cut_no", { ascending: true });
 
@@ -46,6 +47,18 @@ export default async function CutsPage({ params }: { params: { id: string } }) {
   const money = (n: number) =>
     new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(n || 0);
 
+  // Build rows for the client table
+  const rows = (cuts ?? []).map((c: any) => ({
+    id: Number(c.id),
+    no: Number(c.cut_no),
+    status: c.status,
+    totalAmount: c.total_amount,
+    date: c.created_at,
+    deliverablesCount: deliverablesCount.get(Number(c.id)) || 0,
+    excelFile: c.excel_file,
+    pdfFile: c.pdf_file,
+  }));
+
   return (
     <div className="mx-auto max-w-[1200px] space-y-6 p-4 md:p-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -63,62 +76,19 @@ export default async function CutsPage({ params }: { params: { id: string } }) {
                 Atrás
               </Link>
             </Button>
-          <Button asChild>
-            <Link href={`/projects/${params.id}/cuts/new`}>Nuevo corte</Link>
+          <Button asChild className="gap-2">
+            <Link href={`/projects/${params.id}/cuts/new`}>
+              <Scissors className="h-4 w-4" />
+              Nuevo corte
+            </Link>
           </Button>
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-20">No.</TableHead>
-                  <TableHead className="w-36">Fecha</TableHead>
-                  <TableHead className="w-28 text-center"># Actas de Entrega</TableHead>
-                  <TableHead className="w-28 text-center">Status</TableHead>
-                  <TableHead className="w-36 text-right">Total</TableHead>
-                  <TableHead className="w-28 text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(cuts ?? []).length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-sm text-muted-foreground">
-                      No hay cortes todavia.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  (cuts ?? []).map((c: any) => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-medium">#{c.cut_no}</TableCell>
-                                              <TableCell>{new Date(c.created_at).toLocaleDateString('es-ES', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}</TableCell>
-                      <TableCell className="text-center">
-                        {deliverablesCount.get(Number(c.id)) || 0}
-                      </TableCell>
-                      <TableCell className="text-center">{c.status}</TableCell>
-                      <TableCell className="text-right">{money(Number(c.total_amount || 0))}</TableCell>
-                      <TableCell className="text-right">
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/projects/${params.id}/cuts/${c.id}`}>Ver</Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      <CutsListClient
+        projectId={String(proj.id)}
+        rows={rows}
+      />
     </div>
   );
 }

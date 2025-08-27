@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FilePlus2, Receipt } from "lucide-react";
+import { FileText, Scissors } from "lucide-react";
 import type { ProjectSummary } from "@/types";
 
 export default function ProjectHeader({
@@ -41,13 +41,13 @@ export default function ProjectHeader({
 
         {project.hasFinalDeliverable ? (
           <Button variant="outline" className="gap-2" disabled>
-            <FilePlus2 className="h-4 w-4" /> 
+            <FileText className="h-4 w-4" /> 
             Acta Final Creada
           </Button>
         ) : (
           <Button asChild variant="outline" className="gap-2">
             <Link href={`/projects/${project.id}/deliverables/new`}>
-              <FilePlus2 className="h-4 w-4" /> 
+              <FileText className="h-4 w-4" /> 
               Nueva Acta de Entrega
             </Link>
           </Button>
@@ -55,7 +55,7 @@ export default function ProjectHeader({
 
         <Button asChild className="gap-2">
           <Link href={`/projects/${project.id}/cuts/new`}>
-            <Receipt className="h-4 w-4" /> Nuevo Corte
+            <Scissors className="h-4 w-4" /> Nuevo Corte
           </Link>
         </Button>
       </div>
