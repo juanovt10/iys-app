@@ -160,8 +160,8 @@ export default function CutsListClient({
                             </Link>
                           </Button>
                           <CutDownloadButton
-                            excelFile={c.excelFile}
-                            pdfFile={c.pdfFile}
+                            excelFile={c.excelFile || undefined}
+                            pdfFile={c.pdfFile || undefined}
                             onGenerateDocuments={() => handleGenerateDocuments(c.id)}
                             isGenerating={generatingFor === c.id}
                             className="text-xs"

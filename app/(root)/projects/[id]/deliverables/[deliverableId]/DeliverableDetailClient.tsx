@@ -80,8 +80,8 @@ export default function DeliverableDetailClient({
   };
 
   // Use generated files if available, otherwise use stored files
-  const excelFile = generatedFiles?.excelUrl || header.excel_file;
-  const pdfFile = generatedFiles?.pdfUrl || header.pdf_file;
+  const excelFile = generatedFiles?.excelUrl || header.excel_file || undefined;
+  const pdfFile = generatedFiles?.pdfUrl || header.pdf_file || undefined;
 
   return (
     <div className="mx-auto max-w-[1200px] space-y-6 p-4 md:p-6">

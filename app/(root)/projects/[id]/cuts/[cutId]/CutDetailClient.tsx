@@ -87,8 +87,8 @@ export default function CutDetailClient({
   };
 
   // Use generated files if available, otherwise use stored files
-  const excelFile = generatedFiles?.excelUrl || cut.excel_file;
-  const pdfFile = generatedFiles?.pdfUrl || cut.pdf_file;
+  const excelFile = generatedFiles?.excelUrl || cut.excel_file || undefined;
+  const pdfFile = generatedFiles?.pdfUrl || cut.pdf_file || undefined;
 
   // Calculate totals using the same logic as quotes
   const itemsForCalculation = lines.map(line => ({

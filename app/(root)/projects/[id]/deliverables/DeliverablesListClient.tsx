@@ -162,8 +162,8 @@ export default function DeliverablesListClient({
                             </Link>
                           </Button>
                           <DeliverableDownloadButton
-                            excelFile={d.excelFile}
-                            pdfFile={d.pdfFile}
+                            excelFile={d.excelFile || undefined}
+                            pdfFile={d.pdfFile || undefined}
                             onGenerateDocuments={() => handleGenerateDocuments(d.id)}
                             isGenerating={generatingFor === d.id}
                             className="text-xs"

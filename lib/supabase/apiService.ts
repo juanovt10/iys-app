@@ -1,6 +1,6 @@
 import { Client, Item, Quote } from '@/types';
 import { createClient } from '@/lib/supabase/client'
-// import supabase from './client';
+import { createClient as createSupabaseClient } from '@/lib/supabase/client'
 
 const supabase = createClient();
 
@@ -201,6 +201,7 @@ export const getAPIFiles = async (apiData: APIData): Promise<{ excelUrl: string;
   return { excelUrl, pdfUrl };
 };
 
+// Client-side only function - uses DOM APIs
 export const downloadFile = async (url: string) => {
   try {
     // Fetch the file
@@ -217,7 +218,7 @@ export const downloadFile = async (url: string) => {
 
     // Create a link element
     const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
+    link.href = URL.createObjectURL(blob);
     link.download = fileName;
 
     // Append the link to the document and trigger the download
@@ -226,7 +227,7 @@ export const downloadFile = async (url: string) => {
 
     // Clean up and remove the link
     link.parentNode?.removeChild(link);
-    window.URL.revokeObjectURL(link.href);
+    URL.revokeObjectURL(link.href);
 
     return true;
   } catch (err) {
@@ -268,6 +269,7 @@ export const getDeliverableAPIFiles = async (apiData: APIData): Promise<{ excelU
 
 export const saveDeliverableData = async (deliverableData: any): Promise<any> => {
   try {
+    const supabase = createSupabaseClient();
     let returnedData, error;
 
     if (deliverableData.id) {
@@ -296,7 +298,7 @@ export const saveDeliverableData = async (deliverableData: any): Promise<any> =>
 export const buildDeliverableAPIData = async (
   deliverableId: number,
   projectId: number | string,
-  supabase: any
+  supabase: ReturnType<typeof createSupabaseClient>
 ): Promise<APIData> => {
   try {
     // Get deliverable header
@@ -407,6 +409,7 @@ export const getCutAPIFiles = async (apiData: APIData): Promise<{ excelUrl: stri
 
 export const saveCutData = async (cutData: any): Promise<any> => {
   try {
+    const supabase = createSupabaseClient();
     let returnedData, error;
 
     if (cutData.id) {
@@ -435,7 +438,7 @@ export const saveCutData = async (cutData: any): Promise<any> => {
 export const buildCutAPIData = async (
   cutId: number,
   projectId: number | string,
-  supabase: any
+  supabase: ReturnType<typeof createSupabaseClient>
 ): Promise<APIData> => {
   try {
     // Get cut header
