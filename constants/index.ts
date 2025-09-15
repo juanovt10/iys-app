@@ -15,17 +15,17 @@ export const sidebarLinks = [
     label: "Proyectos",
   },
   {
-    imgURL: "/icons/design.svg",
+    imgURL: "/icons/lock-closed.svg",
     route: "/designs",
     label: "Diseños",
   },
   {
-    imgURL: "/icons/inventory.svg",
+    imgURL: "/icons/lock-closed.svg",
     route: "/inventory",
     label: "Inventario",
   },
   {
-    imgURL: "/icons/settings.svg",
+    imgURL: "/icons/lock-closed.svg",
     route: "/settings",
     label: "Ajustes",
   },

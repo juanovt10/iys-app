@@ -1,5 +1,5 @@
-import MobileNav from "@/components/MobileNav";
-import Sidebar from "@/components/Sidebar";
+import AppSidebar from "@/components/Sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
 import { redirect } from "next/navigation";
@@ -14,25 +14,22 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   }
 
   return (
-    <main className="flex h-screen w-full font-inter">
-      <Sidebar />
-      
-      <div className='flex size-full flex-col'>
-        <div className='flex h-16 items-center justify-between p-5 sm:p-8 md:hidden'>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 px-4 md:hidden">
+          <SidebarTrigger className="-ml-1" />
           <Image
             src='/images/logo.png'
-            width={50}
-            height={50}
-            alt='menu icon'
+            width={40}
+            height={40}
+            alt='logo'
           />
-          <div>
-            <MobileNav />
-          </div>
-        </div>
-        <div className="flex-grow overflow-y-auto">
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4">
           {children}
         </div>
-      </div>
-    </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
