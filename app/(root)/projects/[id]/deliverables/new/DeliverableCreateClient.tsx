@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ConfirmSummaryDialog from "@/components/ConfirmSummaryDialog";
 import DeliverableItemsTable, { DeliverableRow } from "./DeliverableItemsTable";
 import { updateProjectStatusToCompleted } from "@/lib/actions";
 import { buildDeliverableAPIData, getDeliverableAPIFiles, saveDeliverableData } from '@/lib/supabase/apiService';
@@ -34,6 +35,7 @@ export default function DeliverableCreateClient({
   const [showFinalDialog, setShowFinalDialog] = useState(false);
   const [isFinalDeliverable, setIsFinalDeliverable] = useState(false);
   const [projectProgress, setProjectProgress] = useState(0);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const [rows, setRows] = useState<DeliverableRow[]>(
     items.map((it) => ({
       itemId: it.itemId,
@@ -241,7 +243,7 @@ export default function DeliverableCreateClient({
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-6 p-4 md:p-6">
+    <div className="w-full space-y-6 p-4 md:p-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Nueva Acta de Entrega</h1>
         <p className="text-sm text-muted-foreground">
@@ -271,7 +273,7 @@ export default function DeliverableCreateClient({
         <Button variant="outline" onClick={() => router.back()} disabled={saving}>
           Cancelar
         </Button>
-        <Button onClick={onSave} disabled={!canSave || saving}>
+        <Button onClick={() => setSummaryOpen(true)} disabled={!canSave || saving}>
           {saving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -280,6 +282,44 @@ export default function DeliverableCreateClient({
           ) : isFinalDeliverable ? "Crear Acta de Entrega Final" : "Crear Acta de Entrega"}
         </Button>
       </div>
+
+      {/* Summary confirm dialog */}
+      <ConfirmSummaryDialog
+        open={summaryOpen}
+        onOpenChange={setSummaryOpen}
+        title={isFinalDeliverable ? "Confirmar Acta de Entrega Final" : "Confirmar Acta de Entrega"}
+        description={<>Revise las cantidades antes de confirmar la creación.</>}
+        confirmLabel="Confirmar y crear"
+        onConfirm={() => { setSummaryOpen(false); onSave(); }}
+        confirmDisabled={saving}
+      >
+        <div className="text-sm text-muted-foreground">Resumen de items a registrar</div>
+        <Card>
+          <CardContent className="p-0">
+            {/* Reuse table preview by listing rows with qty > 0 */}
+            <div className="max-h-72 overflow-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left">
+                    <th className="px-3 py-2">Descripción</th>
+                    <th className="px-3 py-2">Unidad</th>
+                    <th className="px-3 py-2">Cantidad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.filter(r => r.qty > 0).map((r, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="px-3 py-2">{r.descripcion}</td>
+                      <td className="px-3 py-2">{r.unidad || ""}</td>
+                      <td className="px-3 py-2">{r.qty}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </ConfirmSummaryDialog>
 
       {/* Final Deliverable Dialog */}
       <Dialog open={showFinalDialog} onOpenChange={setShowFinalDialog}>

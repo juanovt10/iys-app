@@ -62,7 +62,7 @@ export default function CreateProjectClient({
   }
 
   return (
-    <div className="mx-auto max-w-[1300px] p-4 md:p-6">
+    <div className="w-full space-y-6 p-4 md:p-6">
       {/* Page header */}
       <div className="mb-4 md:mb-6">
         <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">

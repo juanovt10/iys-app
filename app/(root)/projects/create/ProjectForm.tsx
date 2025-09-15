@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ConfirmSummaryDialog from "@/components/ConfirmSummaryDialog";
 import QuoteItemsPreview from "./QuoteItemsPreview";
 import { ProjectQuote } from "@/types";
 
@@ -17,6 +19,8 @@ export default function ProjectForm({
   selectedQuote: ProjectQuote | null; canSubmit: boolean; creating: boolean;
   onCreate: () => void;
 }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   return (
     <div>
       <Card>
@@ -46,12 +50,35 @@ export default function ProjectForm({
           </div>
         </CardContent>
         <CardFooter className="justify-between">
-          <Button onClick={onCreate} disabled={!canSubmit || creating}>
+          <Button onClick={() => setConfirmOpen(true)} disabled={!canSubmit || creating}>
             {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Crear Proyecto
           </Button>
         </CardFooter>
       </Card>
+
+      <ConfirmSummaryDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Confirmar creación del proyecto"
+        description={<>Revise los detalles antes de confirmar. Esta acción creará la carpeta del proyecto.</>}
+        fields={[
+          { label: "Nombre del proyecto", value: projectName || "—" },
+          { label: "Cotización", value: selectedQuote ? `#${selectedQuote.numero} (rev ${selectedQuote.revision})` : "—" },
+          { label: "Cliente", value: selectedQuote?.clientName || "—", fullWidth: true },
+        ]}
+        confirmLabel="Confirmar y crear"
+        onConfirm={() => { setConfirmOpen(false); onCreate(); }}
+        confirmDisabled={creating}
+      >
+        {selectedQuote ? (
+          <div className="rounded-md border">
+            <QuoteItemsPreview quoteId={selectedQuote.id} />
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">No ha seleccionado una cotizacion.</div>
+        )}
+      </ConfirmSummaryDialog>
     </div>
   );
 }
