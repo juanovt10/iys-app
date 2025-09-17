@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, Scissors } from "lucide-react";
+import { useSessionRole } from "@/components/themes.provider";
 import type { ProjectSummary } from "@/types";
 
 export default function ProjectHeader({
@@ -11,6 +12,7 @@ export default function ProjectHeader({
 }: {
   project: ProjectSummary;
 }) {
+  const { role } = useSessionRole();
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div>
@@ -53,11 +55,13 @@ export default function ProjectHeader({
           </Button>
         )}
 
-        <Button asChild className="gap-2">
-          <Link href={`/projects/${project.id}/cuts/new`}>
-            <Scissors className="h-4 w-4" /> Nuevo Corte
-          </Link>
-        </Button>
+        {role !== 'site_manager' && (
+          <Button asChild className="gap-2">
+            <Link href={`/projects/${project.id}/cuts/new`}>
+              <Scissors className="h-4 w-4" /> Nuevo Corte
+            </Link>
+          </Button>
+        )}
       </div>
     </div>
   );

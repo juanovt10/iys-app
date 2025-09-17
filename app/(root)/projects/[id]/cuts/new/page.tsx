@@ -4,8 +4,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient as createServerSupabase } from "@/lib/supabase/server";
 import CreateCutClient from "./CreateCutClient";
+import { getSessionAndRole } from "@/lib/supabase/server";
 
 export default async function NewCutPage({ params }: { params: { id: string } }) {
+  const { role } = await getSessionAndRole();
+  if (role === 'site_manager') return redirect(`/projects/${params.id}`);
   const supabase = createServerSupabase();
 
   const isNumeric = /^\d+$/.test(params.id);

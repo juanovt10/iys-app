@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, FileText, Scissors } from "lucide-react";
+import { useSessionRole } from "@/components/themes.provider";
 
 export type ProjectStatus = "active" | "on_hold" | "completed" | "archived";
 
@@ -134,6 +135,7 @@ function ProjectTableRow({
 }
 
 function RowActions({ projectId, hasFinalDeliverable }: { projectId: string; hasFinalDeliverable: boolean }) {
+  const { role } = useSessionRole();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -151,12 +153,14 @@ function RowActions({ projectId, hasFinalDeliverable }: { projectId: string; has
             {hasFinalDeliverable && <span className="ml-auto text-xs text-muted-foreground">(Final creada)</span>}
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/projects/${projectId}/cuts/new`} className="flex items-center gap-2">
-            <Scissors className="h-4 w-4" />
-            Crear Corte
-          </Link>
-        </DropdownMenuItem>
+        {role !== 'site_manager' && (
+          <DropdownMenuItem asChild>
+            <Link href={`/projects/${projectId}/cuts/new`} className="flex items-center gap-2">
+              <Scissors className="h-4 w-4" />
+              Crear Corte
+            </Link>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

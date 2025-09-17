@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils"
-import { ThemeProvider } from "@/components/themes.provider";
+import { ThemeProvider, RoleProvider, type AppRole } from "@/components/themes.provider";
+import { getSessionAndRole } from "@/lib/supabase/server";
 import { Toaster } from "@/components/ui/toaster"
+import { createClient } from "@/lib/supabase/server";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -15,7 +17,18 @@ export const metadata: Metadata = {
   description: "Application for Infra-Sena",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export type Permissions = {
+  is_superuser: boolean;
+  can_view_proyectos: boolean;
+  can_create_deliverables: boolean;
+  can_manage_cuts: boolean;
+  can_view_cotizaciones: boolean;
+  can_create_projects: boolean;
+};
+
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const { role } = await getSessionAndRole();
+
   return (
     <html lang="en">
       <body className={cn(
@@ -28,8 +41,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-
+          <RoleProvider role={role as AppRole}>
+            {children}
+          </RoleProvider>
         </ThemeProvider>
         <Toaster />
       </body>

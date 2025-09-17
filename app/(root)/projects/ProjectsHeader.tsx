@@ -1,9 +1,12 @@
+"use client";
 import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react'
+import { useSessionRole } from '@/components/themes.provider';
 
 const ProjectsHeader = () => {
+  const { role } = useSessionRole();
   return (
     <div className="mb-5 flex flex-col gap-3 md:mb-6 md:flex-row md:items-center md:justify-between">
       <div>
@@ -22,11 +25,13 @@ const ProjectsHeader = () => {
         >
           <RefreshCw className="h-4 w-4" /> Refrescar
         </Button>
-        <Button asChild className="gap-2">
-          <Link href="/projects/create">
-            <Plus className="h-4 w-4" /> Crear Proyecto
-          </Link>
-        </Button>
+        {role !== 'site_manager' && (
+          <Button asChild className="gap-2">
+            <Link href="/projects/create">
+              <Plus className="h-4 w-4" /> Crear Proyecto
+            </Link>
+          </Button>
+        )}
       </div>
     </div>
   );

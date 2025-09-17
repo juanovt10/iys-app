@@ -1,3 +1,122 @@
+## Supabase backend overview (RLS & roles)
+
+This app relies on Supabase Auth and Row Level Security (RLS). The client must always assume the database is the source of truth and never bypass these rules.
+
+### Auth & identity
+- Auth provider: Supabase Auth.
+- App profile: `public.profiles` has a 1:1 relationship with `auth.users` and stores the app role.
+  - Columns: `id uuid` (equals `auth.uid()`), `role text` in `{ 'admin', 'site_manager' }`.
+- JWT claims are available in Postgres via `auth.uid()` and `current_setting('request.jwt.claims', true)`.
+
+### Helper functions (used by policies)
+```sql
+create or replace function is_admin() returns boolean language sql stable as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.role = 'admin'
+  );
+$$;
+
+create or replace function is_site_manager() returns boolean language sql stable as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.role = 'site_manager'
+  );
+$$;
+```
+
+### RLS status
+- RLS enabled on: `proyectos`, `deliverables`, `deliverable_lines`, `items`, `cuts`, `cut_lines`, `clientes`, `categorias` (plus read‑only views if applicable).
+- Example: `alter table public.proyectos enable row level security;`
+
+### Role capabilities (effective permissions)
+| Role | proyectos | deliverables | deliverable_lines | items | cuts / cut_lines | clientes / categorias | deliverable_* views |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| admin | CRUD | CRUD | CRUD | CRUD | CRUD | CRUD | CRUD |
+| site_manager | R | C,R | C,R | – | – | – | R (if applicable) |
+
+“R” = SELECT; “C” = INSERT. Omitted actions are not permitted. This is intentional: `site_manager` must not write to `items`, `cuts`, etc.
+
+### Policy patterns (representative SQL)
+
+`proyectos`
+```sql
+-- Admin: full access
+create policy proyectos_admin_all on public.proyectos
+using (is_admin()) with check (is_admin());
+
+-- Site manager: read-only
+create policy proyectos_sm_read on public.proyectos
+for select using (is_site_manager());
+```
+
+`deliverables`
+```sql
+-- Admin: full access
+create policy deliverables_admin_all on public.deliverables
+using (is_admin()) with check (is_admin());
+
+-- Site manager: create + read
+create policy deliverables_sm_read on public.deliverables
+for select using (is_site_manager());
+
+create policy deliverables_sm_insert on public.deliverables
+for insert with check (is_site_manager());
+```
+
+`deliverable_lines`
+```sql
+-- Admin: full access
+create policy deliverable_lines_admin_all on public.deliverable_lines
+using (is_admin()) with check (is_admin());
+
+-- Site manager: create + read
+create policy deliverable_lines_sm_read on public.deliverable_lines
+for select using (is_site_manager());
+
+create policy deliverable_lines_sm_insert on public.deliverable_lines
+for insert with check (is_site_manager());
+```
+
+`items` (locked down for non‑admins)
+```sql
+create policy items_admin_all on public.items
+using (is_admin()) with check (is_admin());
+-- No site_manager policy: any write attempt returns 42501
+```
+
+### Known errors and meanings
+- `42501` (RLS): “new row violates row-level security policy” → user lacks a matching policy.
+- `23503` (FK): invalid reference (e.g., missing project or deliverable).
+- `23505` (unique): duplicate data.
+- Others/network → show a generic fallback.
+
+### Frontend contract (defensive design)
+- Never trust a client-side role alone.
+- Fetch user on the server (`supabase.auth.getUser()`), then fetch `profiles.role` server-side and pass minimal role flags to the client.
+- UI can hide/disable actions, but RLS still enforces on the DB.
+- Route protection: unauthenticated users are redirected in `middleware.ts`. For role‑specific pages, check on the server before rendering.
+
+#### Guarded UI affordances
+- `site_manager`
+  - Show: Proyectos list (read-only), Create Deliverable, Add Line Item.
+  - Hide/disable: edit/delete for deliverables & lines (if policies remain C+R only).
+  - Hide: anything that writes to `items`, `cuts`, etc.
+- `admin`
+  - Full CRUD across resources.
+
+#### Optimistic UI
+- For `site_manager`, avoid optimistic updates outside `deliverables`/`deliverable_lines`.
+- If a forbidden action is triggered, expect `42501` and show: “No tienes permisos para realizar esta acción.”
+
+### Data fetching strategy (Next.js App Router)
+- Prefer Server Components/Route Handlers for queries & mutations; pass data to clients as props.
+- Client Components should call Server Actions/Handlers when tighter control is needed (RLS still protects regardless).
+
+### Role exposure to the client
+- Provide a minimal `useSessionRole()` that is fed from a server query of `profiles.role`.
+- Do not store role in `localStorage`; rely on session/cookies.
+
 # Operations Module – README
 
 A comprehensive guide to the **Projects** module built on top of your quoting system. This documents the current UI, functionality, database setup, and how all components work together.

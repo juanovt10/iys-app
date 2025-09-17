@@ -46,6 +46,31 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Role-based guards
+  if (user) {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle<{ role: 'admin' | 'site_manager' | null }>()
+
+      const role = profile?.role || null
+      const path = request.nextUrl.pathname
+
+      // Block site_manager from viewing cut details: /projects/:id/cuts/:cutId
+      const cutDetailMatch = path.match(/^\/projects\/([^\/]+)\/cuts\/([^\/]+)/)
+      if (role === 'site_manager' && cutDetailMatch) {
+        const projectId = cutDetailMatch[1]
+        const url = request.nextUrl.clone()
+        url.pathname = `/projects/${projectId}`
+        return NextResponse.redirect(url)
+      }
+    } catch (e) {
+      // Fail-soft: do nothing; RLS still protects server data
+    }
+  }
+
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
   // creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:

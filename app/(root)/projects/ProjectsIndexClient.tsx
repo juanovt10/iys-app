@@ -62,7 +62,7 @@ export default function ProjectsIndexClient({
   const hasProgressData = projects.some(p => p.deliveredPercent > 0);
 
   return (
-    <div className="mx-auto max-w-[1200px] p-4 md:p-6">
+    <div className="w-full p-4 md:p-6">
       <ProjectsHeader />
       
       <ProjectsControls

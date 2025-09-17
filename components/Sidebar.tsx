@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { sidebarLinks } from '@/constants';
+import { useSessionRole } from '@/components/themes.provider';
 import { cn } from '@/lib/utils';
 import {
   Sidebar,
@@ -19,6 +20,7 @@ import SignOutButton from './SignOut';
 
 const AppSidebar = () => {
   const pathname = usePathname();
+  const { role } = useSessionRole();
 
   // Mock user data - in a real app this would come from your auth provider
   const user = {
@@ -55,19 +57,20 @@ const AppSidebar = () => {
         <SidebarMenu>
           {sidebarLinks.map((item) => {
             const isActive = pathname === item.route || pathname?.startsWith(`${item.route}/`);
+            const isLocked = role === 'site_manager' && item.label !== 'Proyectos';
 
             return (
               <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton asChild isActive={isActive} className={cn(
+                <SidebarMenuButton asChild isActive={isActive} disabled={isLocked} className={cn(
                   "group/item text-black hover:bg-companyGradient hover:text-white px-2",
                   isActive && "bg-companyGradient text-white",
                   // Force override shadcn defaults
                   "[&[data-active=true]]:bg-companyGradient [&[data-active=true]]:text-white"
                 )}>
-                  <Link href={item.route}>
+                  <Link href={isLocked ? '#': item.route} onClick={(e) => { if (isLocked) e.preventDefault(); }}>
                     <div className='relative size-4'>
                       <Image
-                        src={item.imgURL}
+                        src={isLocked ? '/icons/lock-closed.svg' : item.imgURL}
                         alt={item.label}
                         fill
                         className={cn(

@@ -7,11 +7,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Scissors } from "lucide-react";
 import CutsListClient from "./CutsListClient";
+import { getSessionAndRole } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function CutsPage({ params }: { params: { id: string } }) {
+  const { role } = await getSessionAndRole();
+  if (role === 'site_manager') return redirect(`/projects/${params.id}`);
   const supabase = createServerSupabase();
   const pid = /^\d+$/.test(params.id) ? Number(params.id) : params.id;
 

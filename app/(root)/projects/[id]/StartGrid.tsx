@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSessionRole } from "@/components/themes.provider";
 import { Card, CardContent } from "@/components/ui/card";
 
 function StatCard({
@@ -37,10 +38,11 @@ export default function StatGrid({
   cuts: number;
   links?: { deliverables?: string; cuts?: string };
 }) {
+  const { role } = useSessionRole();
   const cards = [
     ...(typeof items === "number" ? [{ label: "Items", value: items }] : []),
     { label: "Actas de Entrega", value: deliverables, href: links?.deliverables },
-    { label: "Cortes", value: cuts, href: links?.cuts },
+    ...(role === 'site_manager' ? [] : [{ label: "Cortes", value: cuts, href: links?.cuts }]),
   ];
   const cols = cards.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2";
   return (
