@@ -84,7 +84,7 @@ export default function DeliverableDetailClient({
   const pdfFile = generatedFiles?.pdfUrl || header.pdf_file || undefined;
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-6 p-4 md:p-6">
+    <div className="w-full space-y-6 p-4 md:p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">

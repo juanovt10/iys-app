@@ -58,6 +58,13 @@ export async function updateSession(request: NextRequest) {
       const role = profile?.role || null
       const path = request.nextUrl.pathname
 
+      // Redirect site_manager root access to /projects
+      if (role === 'site_manager' && path === '/') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/projects'
+        return NextResponse.redirect(url)
+      }
+
       // Block site_manager from viewing cut details: /projects/:id/cuts/:cutId
       const cutDetailMatch = path.match(/^\/projects\/([^\/]+)\/cuts\/([^\/]+)/)
       if (role === 'site_manager' && cutDetailMatch) {

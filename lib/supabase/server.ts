@@ -43,5 +43,8 @@ export async function getSessionAndRole() {
     .eq('id', user.id)
     .maybeSingle<{ role: 'admin' | 'site_manager' | null }>()
 
-  return { user, role: (profile?.role ?? null) as null | 'admin' | 'site_manager' }
+  return {
+    user,
+    role: (profile?.role ?? null) as null | 'admin' | 'site_manager',
+  }
 }

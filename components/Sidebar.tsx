@@ -17,16 +17,32 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import SignOutButton from './SignOut';
+import { createClient } from '@/lib/supabase/client';
+import { useEffect, useState } from 'react';
 
 const AppSidebar = () => {
   const pathname = usePathname();
   const { role } = useSessionRole();
+  const effectivePath = role === 'site_manager' && pathname === '/' ? '/projects' : pathname;
 
-  // Mock user data - in a real app this would come from your auth provider
-  const user = {
-    name: "Usuario",
-    email: "usuario@empresa.com"
-  };
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  useEffect(() => {
+    const supabase = createClient();
+    (async () => {
+      const { data: session } = await supabase.auth.getUser();
+      const email = session?.user?.email || '';
+      let name = '';
+      if (session?.user?.id) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('full_name, name, display_name')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        name = (data?.full_name || data?.name || data?.display_name || '').toString();
+      }
+      setUser({ name: name || (email?.split('@')[0] ?? 'Usuario'), email: email || '' });
+    })();
+  }, []);
 
   return (
     <Sidebar>
@@ -56,7 +72,7 @@ const AppSidebar = () => {
       <SidebarContent className="px-2">
         <SidebarMenu>
           {sidebarLinks.map((item) => {
-            const isActive = pathname === item.route || pathname?.startsWith(`${item.route}/`);
+            const isActive = effectivePath === item.route || effectivePath?.startsWith(`${item.route}/`);
             const isLocked = role === 'site_manager' && item.label !== 'Proyectos';
 
             return (
@@ -90,14 +106,16 @@ const AppSidebar = () => {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold text-black">{user.name}</span>
-                <span className="truncate text-xs text-gray-600">{user.email}</span>
+          {user && (
+            <SidebarMenuItem>
+              <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold text-black">{user.name}</span>
+                  <span className="truncate text-xs text-gray-600">{user.email}</span>
+                </div>
               </div>
-            </div>
-          </SidebarMenuItem>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SignOutButton />
           </SidebarMenuItem>

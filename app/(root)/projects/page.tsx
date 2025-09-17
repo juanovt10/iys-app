@@ -1,5 +1,6 @@
 // app/projects/page.tsx
 import { createClient as createServerSupabase } from "@/lib/supabase/server";
+import { getSessionAndRole } from "@/lib/supabase/server";
 import ProjectsIndexClient from "./ProjectsIndexClient";
 import type { ProjectRow, ProjectStatus } from "@/types";
 
