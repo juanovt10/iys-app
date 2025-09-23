@@ -97,11 +97,6 @@ export default async function CutDetailPage({
     precio_unidad: Number(line.unit_price || 0),
     cantidad: Number(line.qty || 0),
     categoria: '',
-    codigo: '',
-    tamano: '',
-    color: '',
-    forma: '',
-    imagen: ''
   }));
 
   const { subtotal, aiu20, iva, total } = calculateTotals(itemsForCalculation);

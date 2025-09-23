@@ -9,12 +9,7 @@ type QuoteItem = {
   unidad?: string | null;
   precio_unidad?: number | string | null;
   cantidad?: number | string | null;
-  codigo?: string | null;
   categoria?: string | null;
-  tamano?: string | null;
-  color?: string | null;
-  forma?: string | null;
-  imagen?: string | null;
 };
 
 export default function QuoteItemsPreview({ quoteId }: { quoteId: string | number | null }) {

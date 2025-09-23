@@ -95,6 +95,16 @@ export const saveOrUpdateItemData = async (items: Item[]): Promise<Item[]> => {
   try {
     const savedItems: Item[] = [];
 
+    // Only send columns that exist in items table to avoid PGRST204 errors
+    const sanitizeItem = (i: Partial<Item>) => {
+      const payload: any = {};
+      if (typeof i.descripcion !== 'undefined') payload.descripcion = i.descripcion;
+      if (typeof i.unidad !== 'undefined') payload.unidad = i.unidad;
+      if (typeof i.precio_unidad !== 'undefined') payload.precio_unidad = i.precio_unidad;
+      if (typeof i.categoria !== 'undefined') payload.categoria = i.categoria;
+      return payload;
+    };
+
     for (const item of items) {
       let returnedData: Item[] | null = null;
       let error: any = null;
@@ -103,7 +113,7 @@ export const saveOrUpdateItemData = async (items: Item[]): Promise<Item[]> => {
         // Update existing item
         const { data, error: updateError } = await supabase
           .from('items')
-          .update(item)
+          .update(sanitizeItem(item))
           .eq('id', item.id);
 
         returnedData = data as Item[] | null;  // Explicitly cast data
@@ -112,7 +122,7 @@ export const saveOrUpdateItemData = async (items: Item[]): Promise<Item[]> => {
         // Insert new item
         const { data, error: insertError } = await supabase
           .from('items')
-          .insert([item]);
+          .insert([sanitizeItem(item)]);
 
         returnedData = data as Item[] | null;  // Explicitly cast data
         error = insertError;

@@ -23,11 +23,6 @@ export interface Item {
   unidad: string;
   descripcion: string;
   precio_unidad: number;
-  codigo: string;
-  tamano: string;
-  color: string;
-  forma: string;
-  imagen: string;
   categoria: string;
   cantidad: number;
 }
