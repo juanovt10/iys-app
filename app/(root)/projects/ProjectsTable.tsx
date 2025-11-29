@@ -19,6 +19,7 @@ export type ProjectRow = {
   status: ProjectStatus;
   clientName: string;
   quoteId: string;
+  quoteDbId?: string;
   activeRevision: number;
   deliverablesCount: number;
   cutsCount: number;
@@ -107,7 +108,8 @@ function ProjectTableRow({
       <TableCell className="truncate">{project.clientName}</TableCell>
       <TableCell>
         <Link
-          href={project.quoteDbId ? `/quotes/${project.quoteDbId}` : `/quotes/${project.quoteId}`}
+          href={project.
+            quoteDbId ? `/quotes/${project.quoteDbId}` : `/quotes/${project.quoteId}`}
           className="block"
         >
           <div className="text-sm">{project.quoteId}</div>
