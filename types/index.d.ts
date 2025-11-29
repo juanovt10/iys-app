@@ -43,7 +43,8 @@ export type ProjectRow = {
   id: string;
   name: string;
   clientName: string;
-  quoteId: string;
+  quoteId: string;         // display numero
+  quoteDbId?: string;      // actual DB id for /quotes/[quoteId]
   activeRevision: number;
   status: ProjectStatus;
   deliverablesCount: number; // placeholders for now

@@ -14,7 +14,7 @@ const QuoteCard = ({ quote }: QuoteCardProps) => {
 
   return (
     <div key={quote.id} className="p-4 border border-gray-200 rounded shadow hover:shadow-lg hover:border-red-600">
-      <Link href={{ pathname: `/quotes/${quote.id}`, query: { quote: JSON.stringify(quote) } }}>
+      <Link href={`/quotes/${quote.id}`}>
         <div className="block  transition-shadow">
           <div className="flex justify-between">
             <div>

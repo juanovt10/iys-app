@@ -14,39 +14,54 @@ import Link from 'next/link';
 
 const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   const [client, setClient] = useState<Client | null>(null);
+  const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true); 
 
   const supabase = createClient();
 
   const router = useRouter();
   const params = useParams();
-  const id = params.quoteId;
-  const quote = searchParams.quote ? JSON.parse(searchParams.quote) : null;
+  const id = params.quoteId as string;
 
 
-  const fetchQuoteClient = useCallback(async () => {
+  const fetchQuoteAndClient = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('*')
-        .eq('nombre_empresa', quote.cliente)
+      // 1) Fetch quote by id
+      const { data: qd, error: qerr } = await supabase
+        .from('cotizaciones')
+        .select('id, numero, revision, cliente, items, excel_file, pdf_file, remarks')
+        .eq('id', id)
         .single();
+      if (qerr) {
+        console.error('Error fetching quote:', qerr);
+        setLoading(false);
+        return;
+      }
+      setQuote(qd as unknown as Quote);
 
-      if (error) {
-        console.error('Error fetching quote details:', error);
-      } else {
-        setClient(data);
+      // 2) Fetch client by quote.cliente
+      if (qd?.cliente) {
+        const { data: cd, error: cerr } = await supabase
+          .from('clientes')
+          .select('*')
+          .eq('nombre_empresa', qd.cliente)
+          .single();
+        if (cerr) {
+          console.error('Error fetching client:', cerr);
+        } else {
+          setClient(cd as Client);
+        }
       }
     } catch (err) {
       console.error('An unexpected error occurred:', err);
     } finally {
       setLoading(false);
     }
-  }, [supabase, quote.cliente]);
+  }, [supabase, id]);
 
   useEffect(() => {
-    fetchQuoteClient();
-  }, [fetchQuoteClient]);
+    fetchQuoteAndClient();
+  }, [fetchQuoteAndClient]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -58,6 +73,10 @@ const QuoteDetail = ({ searchParams }: { searchParams: any }) => {
   };
   
   
+
+  if (!quote) {
+    return <div className="p-4">No se encontró la cotización.</div>;
+  }
 
   const quoteData = {
     client: client,

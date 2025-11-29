@@ -106,7 +106,12 @@ function ProjectTableRow({
       </TableCell>
       <TableCell className="truncate">{project.clientName}</TableCell>
       <TableCell>
-        <div className="text-sm">{project.quoteId}</div>
+        <Link
+          href={project.quoteDbId ? `/quotes/${project.quoteDbId}` : `/quotes/${project.quoteId}`}
+          className="block"
+        >
+          <div className="text-sm">{project.quoteId}</div>
+        </Link>
         <div className="text-xs text-muted-foreground">
           rev{project.activeRevision}
         </div>

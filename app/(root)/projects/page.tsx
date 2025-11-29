@@ -65,6 +65,7 @@ export default async function ProjectsPage() {
         status: (r.status as ProjectStatus) ?? "active",
         clientName: r.project_client ?? "",
         quoteId: String(r.quote_numero),
+        quoteDbId: r.latest_cotizacion_id ? String(r.latest_cotizacion_id) : undefined,
         activeRevision: Number(r.latest_revision ?? 0),
         deliverablesCount: Number(r.deliverables_count ?? 0),
         cutsCount: Number(r.cuts_count ?? 0),
